@@ -28,5 +28,8 @@ extern "C" {
             .user_ctx = NULL
         };
         const auto server = start_webserver(get_handler);
+        while (true) {
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        }
     }
 }
