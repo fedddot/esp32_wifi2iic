@@ -29,4 +29,6 @@ ENV TARGET=esp32s2
 
 WORKDIR /usr/app/src
 
+RUN $IDF_TOOLS_PATH/entrypoint.sh
+
 ENTRYPOINT ["bash"]
