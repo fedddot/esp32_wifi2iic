@@ -832,32 +832,6 @@ CONFIG_EFUSE_MAX_BLK_LEN=256
 # end of eFuse Bit Manager
 
 #
-# ESP-TLS
-#
-CONFIG_ESP_TLS_USING_MBEDTLS=y
-# CONFIG_ESP_TLS_CUSTOM_STACK is not set
-# CONFIG_ESP_TLS_USE_SECURE_ELEMENT is not set
-CONFIG_ESP_TLS_USE_DS_PERIPHERAL=y
-# CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS is not set
-# CONFIG_ESP_TLS_SERVER_SESSION_TICKETS is not set
-# CONFIG_ESP_TLS_SERVER_CERT_SELECT_HOOK is not set
-# CONFIG_ESP_TLS_SERVER_MIN_AUTH_MODE_OPTIONAL is not set
-# CONFIG_ESP_TLS_PSK_VERIFICATION is not set
-# CONFIG_ESP_TLS_INSECURE is not set
-# default:
-CONFIG_ESP_TLS_DYN_BUF_STRATEGY_SUPPORTED=y
-# end of ESP-TLS
-
-#
-# ADC and ADC Calibration
-#
-# CONFIG_ADC_ONESHOT_CTRL_FUNC_IN_IRAM is not set
-# CONFIG_ADC_CONTINUOUS_ISR_IRAM_SAFE is not set
-CONFIG_ADC_DISABLE_DAC_OUTPUT=y
-# CONFIG_ADC_ENABLE_DEBUG_LOG is not set
-# end of ADC and ADC Calibration
-
-#
 # Wireless Coexistence
 #
 # default:
@@ -879,15 +853,6 @@ CONFIG_ESP_ERR_TO_NAME_LOOKUP=y
 # end of ESP-Driver:GPIO Configurations
 
 #
-# ESP-Driver:SPI Configurations
-#
-# CONFIG_SPI_MASTER_IN_IRAM is not set
-CONFIG_SPI_MASTER_ISR_IN_IRAM=y
-# CONFIG_SPI_SLAVE_IN_IRAM is not set
-CONFIG_SPI_SLAVE_ISR_IN_IRAM=y
-# end of ESP-Driver:SPI Configurations
-
-#
 # ESP-Driver:UART Configurations
 #
 # CONFIG_UART_ISR_IN_IRAM is not set
@@ -900,16 +865,6 @@ CONFIG_SPI_SLAVE_ISR_IN_IRAM=y
 # CONFIG_UHCI_ISR_CACHE_SAFE is not set
 # CONFIG_UHCI_ENABLE_DEBUG_LOG is not set
 # end of ESP-Driver:UHCI Configurations
-
-#
-# Ethernet
-#
-# default:
-CONFIG_ETH_ENABLED=y
-CONFIG_ETH_USE_SPI_ETHERNET=y
-# CONFIG_ETH_USE_OPENETH is not set
-# CONFIG_ETH_TRANSMIT_MUTEX is not set
-# end of Ethernet
 
 #
 # Event Loop Library
@@ -1054,8 +1009,6 @@ CONFIG_ESP_BROWNOUT_USE_INTR=y
 # end of Brownout Detector
 # end of Power Supplier
 
-# default:
-CONFIG_ESP_SPI_BUS_LOCK_ISR_FUNCS_IN_IRAM=y
 CONFIG_ESP_INTR_IN_IRAM=y
 # end of Hardware Settings
 
@@ -2331,7 +2284,6 @@ CONFIG_STACK_CHECK_NONE=y
 # CONFIG_STACK_CHECK_STRONG is not set
 # CONFIG_STACK_CHECK_ALL is not set
 # CONFIG_WARN_WRITE_STRINGS is not set
-CONFIG_ADC_DISABLE_DAC=y
 # CONFIG_EXTERNAL_COEX_ENABLE is not set
 # CONFIG_ESP_WIFI_EXTERNAL_COEXIST_ENABLE is not set
 # CONFIG_EVENT_LOOP_PROFILING is not set

@@ -13,11 +13,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 idf_build_process(
     ${TARGET}
-    COMPONENTS freertos esp-tls nvs_flash esp_netif esp_http_server esp_wifi esp_eth esp_adc
+    COMPONENTS nvs_flash esp_http_server esp_wifi
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     BUILD_DIR ${CMAKE_BINARY_DIR}
 )
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(${CMAKE_PROJECT_NAME}.elf ${CMAKE_CURRENT_LIST_DIR}/src/esp-server.cpp)
@@ -25,6 +24,8 @@ target_link_libraries(
     ${CMAKE_PROJECT_NAME}.elf
     PRIVATE
     idf::esp_driver_gpio
+    idf::esp_http_server
+    idf::nvs_flash
 )
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
 target_compile_definitions(
