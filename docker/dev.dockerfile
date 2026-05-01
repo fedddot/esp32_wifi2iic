@@ -14,18 +14,18 @@ RUN ${IDF_PATH}/tools/idf_tools.py install esp-clang
 ARG UID=1000
 ARG GID=1000
 
-# RUN addgroup -g ${GID} developer
-# RUN adduser -D -u ${UID} -G developer -s /bin/bash developer
+RUN userdel -r ubuntu 2>/dev/null; groupdel ubuntu 2>/dev/null; true
+RUN groupadd -g ${GID} developer
+RUN useradd -m -u ${UID} -g developer -s /bin/bash developer
 
 ENV SHELL=bash
 
-# ENV HOME=/home/developer
-# COPY --chown=${UID}:${GID} docker/shell_additions ${HOME}
-# RUN echo "source ${HOME}/shell_additions" >> ${HOME}/.bashrc
+ENV HOME=/home/developer
+COPY --chown=${UID}:${GID} docker/shell_additions ${HOME}
+RUN echo "source ${HOME}/shell_additions" >> ${HOME}/.bashrc
 
-# USER developer
+USER developer
 
 WORKDIR /usr/app/src
-
 
 ENTRYPOINT ["bash"]
