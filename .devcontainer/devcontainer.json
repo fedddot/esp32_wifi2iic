@@ -26,7 +26,8 @@
                 "systemticks.c4-dsl-extension"
             ],
             "settings": {
-                "clangd.arguments": ["--query-driver=xtensa-${TARGET}-elf-gcc,xtensa-${TARGET}-elf-g++"],
+                "clangd.path": "/opt/esp/tools/esp-clang/esp-20.1.1_20250829/esp-clang/bin/clangd", 
+                "clangd.arguments": ["--query-driver=/opt/esp/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/bin/xtensa-esp32s2-elf-gcc,/opt/esp/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/bin/xtensa-esp32s2-elf-g++"],
                 "editor.tabSize": 4,
                 "editor.insertSpaces": true,
                 "editor.indentSize": "tabSize",
