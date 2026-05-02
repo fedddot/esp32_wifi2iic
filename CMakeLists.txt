@@ -98,6 +98,8 @@ target_link_libraries(
     PRIVATE
     idf::esp_driver_gpio
     idf::esp_http_server
+    idf::esp_driver_gpio
+    
     wifi_access_point_guard
     wifi_station_guard
 
@@ -109,8 +111,23 @@ target_link_libraries(
 
     service_api
 )
+
+if(NOT DEFINED NETWORK_SSID)
+    message(FATAL_ERROR "NETWORK_SSID is not defined. Please pass it to the cmake command")
+endif()
+
+if(NOT DEFINED NETWORK_PASSWORD)
+    message(FATAL_ERROR "NETWORK_PASSWORD is not defined. Please pass it to the cmake command")
+endif()
+if(NOT DEFINED SERVICE_PORT)
+    message(FATAL_ERROR "SERVICE_PORT is not defined.")
+endif()
+
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
-# target_compile_definitions(
-#     ${CMAKE_PROJECT_NAME}.elf
-#     PRIVATE
-# )
+target_compile_definitions(
+    ${CMAKE_PROJECT_NAME}.elf
+    PRIVATE
+    NETWORK_SSID="${NETWORK_SSID}"
+    NETWORK_PASSWORD="${NETWORK_PASSWORD}"
+    SERVICE_PORT=${SERVICE_PORT}
+)
