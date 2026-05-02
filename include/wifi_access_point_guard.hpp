@@ -60,13 +60,13 @@ namespace mcu_server {
                 .password = {'\0'},
                 .ssid_len = 0,
                 .channel = 0, // TODO: check it
-                .authmode = WIFI_AUTH_WPA2_PSK,
+                .authmode = WIFI_AUTH_WPA2_WPA3_PSK,
                 .ssid_hidden = 0,
                 .max_connection = 1,
                 .beacon_interval = 100,
                 .csa_count = 3,
                 .dtim_period = 1,
-                .pairwise_cipher = WIFI_CIPHER_TYPE_NONE,
+                .pairwise_cipher = WIFI_CIPHER_TYPE_CCMP,
                 .ftm_responder = false,
                 .pmf_cfg = wifi_pmf_config_t {
                     .capable = false,
