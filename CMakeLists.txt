@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 idf_build_process(
     ${TARGET}
-    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi
+    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi esp-tls
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     BUILD_DIR ${CMAKE_BINARY_DIR}
 )
@@ -80,8 +80,14 @@ target_link_libraries(
     idf::esp_http_server
     wifi_access_point_guard
     wifi_station_guard
+
     http_request_data_reader
+    json_message_reader
+    
     http_request_data_writer
+    json_message_writer
+
+    idf::mbedtls
 )
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
 target_compile_definitions(

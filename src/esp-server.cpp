@@ -7,6 +7,8 @@
 #include "wifi_station_guard.hpp"
 #include "http_request_data_reader.hpp"
 #include "http_request_data_writer.hpp"
+#include "json_message_reader.hpp"
+#include "json_message_writer.hpp"
 
 static httpd_handle_t start_webserver(const httpd_uri_t& get_handler) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -21,9 +23,28 @@ static httpd_handle_t start_webserver(const httpd_uri_t& get_handler) {
     return server;
 }
 
+struct SetWifiContext {
+    std::optional<mcu_server::WifiStationGuard>* sta_guard;
+    mcu_server::NvsFlashGuard nvs_guard;
+};
+
 static esp_err_t config_wifi_cb(httpd_req_t *request) {
-    auto sta_guard = static_cast<std::optional<mcu_server::WifiStationGuard> *>(request->user_ctx);
-    Json
+    auto ctx = static_cast<SetWifiContext *>(request->user_ctx);
+    if (!ctx) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    nanoipc::HttpRequestDataReader data_reader(request);
+    nanoipc::HttpRequestDataWriter data_writer(request);
+    nanoipc::JsonMessageReader json_reader(&data_reader);
+    nanoipc::JsonMessageWriter json_writer(&data_writer);
+    const auto json_msg_opt = json_reader.read();
+    if (!json_msg_opt.has_value()) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    const auto ssid = json_msg_opt.value()["ssid"].asString();
+    const auto password = json_msg_opt.value()["password"].asString();
+    ctx->sta_guard->emplace(ssid, password, ctx->nvs_guard);
+
     if (const auto res = httpd_resp_set_status(request, HTTPD_200); res != ESP_OK) {
         return res;
     }
@@ -41,12 +62,16 @@ extern "C" {
         mcu_server::NvsFlashGuard nvs_guard;
         mcu_server::WifiAccessPointGuard ap_guard(ssid, password, nvs_guard);
         std::optional<mcu_server::WifiStationGuard> sta_guard;
+        SetWifiContext set_wifi_ctx {
+            .sta_guard = &sta_guard,
+            .nvs_guard = mcu_server::NvsFlashGuard(nvs_guard)
+        };
 
         const auto get_handler = httpd_uri_t {
             .uri      = "/config/wifi",
             .method   = HTTP_POST,
             .handler  = config_wifi_cb,
-            .user_ctx = &sta_guard
+            .user_ctx = &set_wifi_ctx
         };
         const auto server = start_webserver(get_handler);
         while (true) {
