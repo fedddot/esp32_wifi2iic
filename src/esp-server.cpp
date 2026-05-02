@@ -75,7 +75,8 @@ extern "C" {
     void app_main(void) {
         const std::string& ssid = "ESP32-AP";
         const std::string& password = "EspPassWord";
-        mcu_server::WifiAccessPointGuard ap_guard(ssid, password);
+        mcu_server::NvsFlashGuard nvs_guard;
+        mcu_server::WifiAccessPointGuard ap_guard(ssid, password, nvs_guard);
 
         const auto get_handler = httpd_uri_t {
             .uri      = "/some/data",

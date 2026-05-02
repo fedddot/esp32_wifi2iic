@@ -8,23 +8,19 @@
 #include "esp_wifi_types_generic.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
-#include "nvs_flash.h"
+
+#include "nvs_flash_guard.hpp"
 
 namespace mcu_server {
     class WifiAccessPointGuard {
     public:
         WifiAccessPointGuard(
-            const std::string& ssid = "ESP32-AP",
-            const std::string& password = "EspPassWord"
-        ) {
+            const std::string& ssid,
+            const std::string& password,
+            const NvsFlashGuard& nvs_guard
+        ): m_nvs_guard(nvs_guard) {
             if (s_reference_count) {
                 throw std::runtime_error("WifiAccessPointGuard is already initialized");
-            }
-            // TODO: create guard for NVS flash
-            esp_err_t ret = nvs_flash_init();
-            if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-                ESP_ERROR_CHECK(nvs_flash_erase());
-                ESP_ERROR_CHECK(nvs_flash_init());
             }
             ESP_ERROR_CHECK(esp_netif_init());
             ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -52,11 +48,10 @@ namespace mcu_server {
             esp_wifi_stop();
             esp_wifi_deinit();
             esp_event_loop_delete_default();
-            ESP_ERROR_CHECK(nvs_flash_erase());
-            ESP_ERROR_CHECK(nvs_flash_deinit());
             esp_netif_destroy(s_netif);
         }
     private:
+        NvsFlashGuard m_nvs_guard;
         static std::size_t s_reference_count;
         static esp_netif_t *s_netif;
         static wifi_ap_config_t generate_ap_cfg(const std::string& ssid, const std::string& password) {

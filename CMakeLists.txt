@@ -18,12 +18,20 @@ idf_build_process(
     BUILD_DIR ${CMAKE_BINARY_DIR}
 )
 
+add_library(nvs_flash_guard INTERFACE)
+target_include_directories(nvs_flash_guard INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(
+    nvs_flash_guard
+    INTERFACE
+    idf::nvs_flash
+)
+
 add_library(wifi_access_point_guard INTERFACE)
 target_include_directories(wifi_access_point_guard INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(
     wifi_access_point_guard
     INTERFACE
-    idf::nvs_flash
+    nvs_flash_guard
     idf::esp_netif
     idf::esp_wifi
 )
