@@ -1,8 +1,12 @@
+#include <optional>
 #include <stdexcept>
 
 #include "esp_http_server.h"
+#include "http_parser.h"
 #include "wifi_access_point_guard.hpp"
 #include "wifi_station_guard.hpp"
+#include "http_request_data_reader.hpp"
+#include "http_request_data_writer.hpp"
 
 static httpd_handle_t start_webserver(const httpd_uri_t& get_handler) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -17,7 +21,9 @@ static httpd_handle_t start_webserver(const httpd_uri_t& get_handler) {
     return server;
 }
 
-static esp_err_t get_handler_cb(httpd_req_t *request) {
+static esp_err_t config_wifi_cb(httpd_req_t *request) {
+    auto sta_guard = static_cast<std::optional<mcu_server::WifiStationGuard> *>(request->user_ctx);
+    Json
     if (const auto res = httpd_resp_set_status(request, HTTPD_200); res != ESP_OK) {
         return res;
     }
@@ -34,12 +40,13 @@ extern "C" {
         const std::string& password = "EspPassWord";
         mcu_server::NvsFlashGuard nvs_guard;
         mcu_server::WifiAccessPointGuard ap_guard(ssid, password, nvs_guard);
+        std::optional<mcu_server::WifiStationGuard> sta_guard;
 
         const auto get_handler = httpd_uri_t {
-            .uri      = "/some/data",
-            .method   = HTTP_GET,
-            .handler  = get_handler_cb,
-            .user_ctx = NULL
+            .uri      = "/config/wifi",
+            .method   = HTTP_POST,
+            .handler  = config_wifi_cb,
+            .user_ctx = &sta_guard
         };
         const auto server = start_webserver(get_handler);
         while (true) {

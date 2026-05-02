@@ -18,6 +18,32 @@ idf_build_process(
     BUILD_DIR ${CMAKE_BINARY_DIR}
 )
 
+include(FetchContent)
+FetchContent_Declare(
+    nanoipc
+    GIT_REPOSITORY  https://github.com/fedddot/nanoipc.git
+    GIT_TAG         main
+)
+FetchContent_MakeAvailable(nanoipc)
+
+add_library(http_request_data_reader INTERFACE)
+target_include_directories(http_request_data_reader INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(
+    http_request_data_reader
+    INTERFACE
+    idf::esp_http_server
+    reader
+)
+
+add_library(http_request_data_writer INTERFACE)
+target_include_directories(http_request_data_writer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(
+    http_request_data_writer
+    INTERFACE
+    idf::esp_http_server
+    writer
+)
+
 add_library(nvs_flash_guard INTERFACE)
 target_include_directories(nvs_flash_guard INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(
@@ -54,6 +80,8 @@ target_link_libraries(
     idf::esp_http_server
     wifi_access_point_guard
     wifi_station_guard
+    http_request_data_reader
+    http_request_data_writer
 )
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
 target_compile_definitions(
