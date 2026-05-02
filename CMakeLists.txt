@@ -13,11 +13,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 idf_build_process(
     ${TARGET}
-    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi esp-tls
+    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     BUILD_DIR ${CMAKE_BINARY_DIR}
 )
 
+set(NANOIPC_LINUX_FEATURES OFF)
+set(NANOIPC_TESTS OFF)
 include(FetchContent)
 FetchContent_Declare(
     nanoipc
@@ -82,15 +84,13 @@ target_link_libraries(
     wifi_station_guard
 
     http_request_data_reader
-    json_message_reader
-    
-    http_request_data_writer
-    json_message_writer
+    pb_message_reader
 
-    idf::mbedtls
+    http_request_data_writer
+    pb_message_writer
 )
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
-target_compile_definitions(
-    ${CMAKE_PROJECT_NAME}.elf
-    PRIVATE
-)
+# target_compile_definitions(
+#     ${CMAKE_PROJECT_NAME}.elf
+#     PRIVATE
+# )
