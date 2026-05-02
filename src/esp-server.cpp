@@ -1,9 +1,8 @@
 #include <stdexcept>
 
 #include "esp_http_server.h"
-#include "esp_wifi.h"
 #include "esp_wifi_types_generic.h"
-#include "nvs_flash.h"
+#include "wifi_access_point_guard.hpp"
 
 static httpd_handle_t start_webserver(const httpd_uri_t& get_handler) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -76,18 +75,7 @@ extern "C" {
     void app_main(void) {
         const std::string& ssid = "ESP32-AP";
         const std::string& password = "EspPassWord";
-        ESP_ERROR_CHECK(nvs_flash_init());
-        ESP_ERROR_CHECK(esp_netif_init());
-        ESP_ERROR_CHECK(esp_event_loop_create_default());
-        esp_netif_create_default_wifi_ap();
-        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-        ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-        wifi_config_t ap_config = {
-            .ap = generate_ap_cfg(ssid, password)
-        };
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
-        ESP_ERROR_CHECK(esp_wifi_start());
+        mcu_server::WifiAccessPointGuard ap_guard(ssid, password);
 
         const auto get_handler = httpd_uri_t {
             .uri      = "/some/data",

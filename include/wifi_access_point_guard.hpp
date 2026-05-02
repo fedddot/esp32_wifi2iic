@@ -27,7 +27,7 @@ namespace mcu_server {
             }
             ESP_ERROR_CHECK(esp_netif_init());
             ESP_ERROR_CHECK(esp_event_loop_create_default());
-            esp_netif_create_default_wifi_ap();
+            s_netif = esp_netif_create_default_wifi_ap();
             wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
             ESP_ERROR_CHECK(esp_wifi_init(&cfg));
             wifi_config_t ap_config = {
@@ -48,14 +48,16 @@ namespace mcu_server {
             if (s_reference_count) {
                 return;
             }
-            ESP_ERROR_CHECK(esp_wifi_stop());
-            ESP_ERROR_CHECK(esp_wifi_deinit());
-            ESP_ERROR_CHECK(esp_event_loop_delete_default());
+            esp_wifi_stop();
+            esp_wifi_deinit();
+            esp_event_loop_delete_default();
             ESP_ERROR_CHECK(nvs_flash_erase());
             ESP_ERROR_CHECK(nvs_flash_deinit());
+            esp_netif_destroy(s_netif);
         }
     private:
         static std::size_t s_reference_count;
+        static esp_netif_t *s_netif;
         static wifi_ap_config_t generate_ap_cfg(const std::string& ssid, const std::string& password) {
             auto config = wifi_ap_config_t {
                 .ssid = {'\0'},
@@ -101,6 +103,7 @@ namespace mcu_server {
     };
 
     inline std::size_t WifiAccessPointGuard::s_reference_count = 0;
+    inline esp_netif_t *WifiAccessPointGuard::s_netif = nullptr;
 } // namespace mcu_server
 
 #endif // WIFI_ACCESS_POINT_GUARD_HPP
