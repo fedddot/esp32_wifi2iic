@@ -9,11 +9,10 @@ message WifiConfigRequest {
 
 message ServiceResponse {
     Result result = 1;
-    string message = 2;
 }
 
 enum Result {
-    SUCCESS = 1;
-    BAD_REQUEST = 2;
-    FAILURE = 3;
+    SUCCESS = 0;
+    BAD_REQUEST = 1;
+    FAILURE = 2;
 }
