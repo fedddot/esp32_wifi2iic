@@ -17,8 +17,6 @@ RUN useradd -m -u ${UID} -g developer -s /bin/bash developer
 
 RUN chmod -R a+rwX ${IDF_TOOLS_PATH}
 
-RUN bash --init-file $IDF_PATH/export.sh -c "${IDF_PYTHON_ENV_PATH}/bin/pip install protobuf grpcio-tools"
-
 ENV SHELL=bash
 
 ENV HOME=/home/developer
@@ -37,6 +35,7 @@ ENV TARGET=esp32s2
 WORKDIR /usr/app/src
 
 RUN $IDF_TOOLS_PATH/entrypoint.sh
-# RUN pip3 install --upgrade --break-system-packages protobuf grpcio-tools
+# RUN pip install --upgrade --break-system-packages protobuf grpcio-tools
+# RUN bash --init-file $IDF_PATH/export.sh -c "$IDF_PYTHON_ENV_PATH/bin/pip install protobuf grpcio-tools"
 
 ENTRYPOINT ["bash"]
