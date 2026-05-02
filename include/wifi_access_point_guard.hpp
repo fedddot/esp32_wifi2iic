@@ -60,7 +60,7 @@ namespace mcu_server {
                 .password = {'\0'},
                 .ssid_len = 0,
                 .channel = 0, // TODO: check it
-                .authmode = WIFI_AUTH_WPA2_PSK,
+                .authmode = WIFI_AUTH_WPA3_PSK,
                 .ssid_hidden = 0,
                 .max_connection = 1,
                 .beacon_interval = 100,
