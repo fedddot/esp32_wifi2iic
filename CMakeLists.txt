@@ -36,6 +36,16 @@ target_link_libraries(
     idf::esp_wifi
 )
 
+add_library(wifi_station_guard INTERFACE)
+target_include_directories(wifi_station_guard INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(
+    wifi_station_guard
+    INTERFACE
+    nvs_flash_guard
+    idf::esp_netif
+    idf::esp_wifi
+)
+
 add_executable(${CMAKE_PROJECT_NAME}.elf ${CMAKE_CURRENT_LIST_DIR}/src/esp-server.cpp)
 target_link_libraries(
     ${CMAKE_PROJECT_NAME}.elf
@@ -43,6 +53,7 @@ target_link_libraries(
     idf::esp_driver_gpio
     idf::esp_http_server
     wifi_access_point_guard
+    wifi_station_guard
 )
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
 target_compile_definitions(
