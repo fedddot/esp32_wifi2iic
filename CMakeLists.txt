@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 idf_build_process(
     ${TARGET}
-    COMPONENTS nvs_flash esp_http_server esp_wifi
+    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     BUILD_DIR ${CMAKE_BINARY_DIR}
 )
@@ -26,6 +26,8 @@ target_link_libraries(
     idf::esp_driver_gpio
     idf::esp_http_server
     idf::nvs_flash
+    idf::esp_netif
+    idf::esp_wifi
 )
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
 target_compile_definitions(
