@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package service_api;
+
+message WifiConfigRequest {
+    string ssid = 1;
+    string pass = 2;
+}
+
+message ServiceResponse {
+    Result result = 1;
+    string message = 2;
+}
+
+enum Result {
+    SUCCESS = 1;
+    BAD_REQUEST = 2;
+    FAILURE = 3;
+}

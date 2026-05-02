@@ -28,6 +28,24 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nanoipc)
 
+set(GENERATED_API_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+add_custom_command(
+	OUTPUT ${GENERATED_API_DIR}/service.pb.c ${GENERATED_API_DIR}/service.pb.h
+	DEPENDS ${CMAKE_CURRENT_LIST_DIR}/src/service.proto
+	COMMAND ${Python_EXECUTABLE} ${nanopb_SOURCE_DIR}/generator/nanopb_generator.py -I ${CMAKE_CURRENT_LIST_DIR}/src -D ${GENERATED_API_DIR} service.proto
+)
+
+add_custom_target(
+	generate_service_api
+	DEPENDS ${GENERATED_API_DIR}/service.pb.c ${GENERATED_API_DIR}/service.pb.h
+)
+
+add_library(service_api INTERFACE)
+add_dependencies(service_api generate_service_api)
+target_sources(service_api INTERFACE ${GENERATED_API_DIR}/service.pb.c)
+target_include_directories(service_api INTERFACE ${GENERATED_API_DIR})
+
 add_library(http_request_data_reader INTERFACE)
 target_include_directories(http_request_data_reader INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(
@@ -88,6 +106,8 @@ target_link_libraries(
 
     http_request_data_writer
     pb_message_writer
+
+    service_api
 )
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
 # target_compile_definitions(
