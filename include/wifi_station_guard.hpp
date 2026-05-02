@@ -12,7 +12,7 @@
 namespace mcu_server {
     class WifiStationGuard {
     public:
-        WifiStationGuard(const std::string& ssid, const std::string& password, const NvsFlashGuard& nvs_guard) : m_nvs_guard(nvs_guard) {
+        WifiStationGuard(const std::string& ssid, const std::string& password, const NvsFlashGuard& nvs_guard): m_nvs_guard(nvs_guard) {
             if (s_reference_count) {
                 throw std::runtime_error("WifiStationGuard is already initialized");
             }
