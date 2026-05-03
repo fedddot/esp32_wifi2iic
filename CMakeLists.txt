@@ -88,7 +88,6 @@ target_link_libraries(
     wifi_station_guard
     INTERFACE
     nvs_flash_guard
-    esp32_uart_logger
     idf::esp_netif
     idf::esp_wifi
 )
