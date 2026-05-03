@@ -62,6 +62,11 @@ inline httpd_handle_t start_webserver(const httpd_uri_t& read_handler, const htt
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.server_port = SERVICE_PORT;
     config.task_priority = tskIDLE_PRIORITY + 10;
+    config.keep_alive_enable = true;
+    config.keep_alive_idle = 5;      // seconds before sending keepalive probes
+    config.keep_alive_interval = 1;  // seconds between probes
+    config.keep_alive_count = 3;     // probes before declaring connection dead
+    config.lru_purge_enable = true;  // reclaim oldest socket when max_open_sockets is reached
     httpd_handle_t server = nullptr;
     if (httpd_start(&server, &config) != ESP_OK) {
         throw std::runtime_error("Failed to start HTTP server");

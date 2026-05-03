@@ -18,6 +18,7 @@ Generate the Python bindings with:
 
 import argparse
 import sys
+import time
 
 try:
     import requests
@@ -92,24 +93,19 @@ def main():
     payload = request.SerializeToString()
     print(f"Sending {len(payload)} bytes to {args.url} ...")
 
-    for i in range(30):
-        print(f"Sending request {i+1}/30")
-        if args.command == "read":
-            response = requests.get(
-                args.url,
-                data=payload,
-                headers={"Content-Type": "application/x-protobuf"},
-                timeout=10,
-            )
-        else:
-            response = requests.post(
-                args.url,
-                data=payload,
-                headers={"Content-Type": "application/x-protobuf"},
-                timeout=10,
-            )
-        response.raise_for_status()
-        print_response(response.content)
+    with requests.Session() as session:
+        session.headers.update({"Content-Type": "application/x-protobuf"})
+        for i in range(30):
+            print(f"Sending request {i+1}/30")
+            t_start = time.perf_counter()
+            if args.command == "read":
+                response = session.get(args.url, data=payload, timeout=10)
+            else:
+                response = session.post(args.url, data=payload, timeout=10)
+            elapsed_ms = (time.perf_counter() - t_start) * 1000
+            response.raise_for_status()
+            print_response(response.content)
+            print(f"  Round-trip: {elapsed_ms:.1f} ms")
 
 
 if __name__ == "__main__":
