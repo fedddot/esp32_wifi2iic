@@ -8,6 +8,7 @@
 #include "esp_event.h"
 
 #include "esp_wifi_default.h"
+#include "esp_wifi_types_generic.h"
 #include "nvs_flash_guard.hpp"
 
 namespace mcu_server {
@@ -52,6 +53,9 @@ namespace mcu_server {
             }
             if (esp_wifi_set_config(WIFI_IF_STA, &wifi_config) != ESP_OK) {
                 throw std::runtime_error("Failed to set Wi-Fi configuration");
+            }
+            if (esp_wifi_set_ps(wifi_ps_type_t::WIFI_PS_NONE) != ESP_OK) {
+                throw std::runtime_error("Failed to set Wi-Fi power save mode");
             }
             if (esp_wifi_start() != ESP_OK) {
                 throw std::runtime_error("Failed to start Wi-Fi");
