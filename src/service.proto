@@ -1,14 +1,40 @@
 syntax = "proto3";
 
-package service_api;
+package wifi_iic_relay_api;
 
-message WifiConfigRequest {
-    string ssid = 1;
-    string pass = 2;
+message WifiI2CRelayRequest {
+    oneof request {
+        WifiI2CRelayWriteRequest write_request = 1;
+        WifiI2CRelayReadRequest read_request = 2;
+    }
 }
 
-message ServiceResponse {
+message WifiI2CRelayResponse {
+    oneof response {
+        WifiI2CRelayWriteResponse write_response = 1;
+        WifiI2CRelayReadResponse read_response = 2;
+    }
+}
+
+message WifiI2CRelayWriteRequest {
+    uint32 address = 1;
+    uint32 timeout_ms = 2;
+    bytes data = 3;
+}
+
+message WifiI2CRelayWriteResponse {
     Result result = 1;
+}
+
+message WifiI2CRelayReadRequest {
+    uint32 address = 1;
+    uint32 timeout_ms = 2;
+    uint32 length = 3;
+}
+
+message WifiI2CRelayReadResponse {
+    Result result = 1;
+    bytes data = 2;
 }
 
 enum Result {
