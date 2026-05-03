@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.20)
 
 set(TARGET $ENV{TARGET})
 set(CMAKE_TOOLCHAIN_FILE $ENV{IDF_PATH}/tools/cmake/toolchain-${TARGET}.cmake)
-set(SDKCONFIG_DEFAULTS "sdkconfig.defaults")
 include($ENV{IDF_PATH}/tools/cmake/idf.cmake)
 
 project(esp_mcu_server C CXX)
