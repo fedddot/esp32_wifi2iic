@@ -52,7 +52,7 @@ namespace mcu_server {
             esp_wifi_start();
             ++s_reference_count;
         }
-        WifiStationGuard(const WifiStationGuard&) {
+        WifiStationGuard(const WifiStationGuard& other) : m_nvs_guard(other.m_nvs_guard), m_uart_logger(other.m_uart_logger), m_netif(other.m_netif) {
             ++s_reference_count;
         }
         WifiStationGuard& operator=(const WifiStationGuard&) = delete;
