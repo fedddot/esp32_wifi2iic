@@ -38,14 +38,14 @@ add_custom_command(
 )
 
 add_custom_target(
-	generate_service_api
+	generate_wifi_iic_relay_api
 	DEPENDS ${GENERATED_API_DIR}/service.pb.c ${GENERATED_API_DIR}/service.pb.h
 )
 
-add_library(service_api INTERFACE)
-add_dependencies(service_api generate_service_api)
-target_sources(service_api INTERFACE ${GENERATED_API_DIR}/service.pb.c)
-target_include_directories(service_api INTERFACE ${GENERATED_API_DIR})
+add_library(wifi_iic_relay_api INTERFACE)
+add_dependencies(wifi_iic_relay_api generate_wifi_iic_relay_api)
+target_sources(wifi_iic_relay_api INTERFACE ${GENERATED_API_DIR}/service.pb.c)
+target_include_directories(wifi_iic_relay_api INTERFACE ${GENERATED_API_DIR})
 
 add_library(http_request_data_reader INTERFACE)
 target_include_directories(http_request_data_reader INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -110,7 +110,7 @@ target_link_libraries(
     http_request_data_writer
     pb_message_writer
 
-    service_api
+    wifi_iic_relay_api
 )
 
 if(NOT DEFINED NETWORK_SSID)
