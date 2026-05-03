@@ -1,3 +1,5 @@
+#include <array>
+#include <cstring>
 #include <optional>
 #include <stdexcept>
 
@@ -5,6 +7,7 @@
 #include "driver/gpio.h"
 
 #include "http_parser.h"
+#include "pb.h"
 #include "wifi_iic_relay.pb.h"
 #include "wifi_iic_request_reader.hpp"
 #include "wifi_iic_response_writer.hpp"
@@ -58,6 +61,7 @@ extern "C" {
 inline httpd_handle_t start_webserver(const httpd_uri_t& read_handler, const httpd_uri_t& write_handler) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.server_port = SERVICE_PORT;
+    config.task_priority = tskIDLE_PRIORITY + 10;
     httpd_handle_t server = nullptr;
     if (httpd_start(&server, &config) != ESP_OK) {
         throw std::runtime_error("Failed to start HTTP server");
@@ -119,13 +123,13 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
         return ESP_OK;
     }
     wifi_iic_relay_api_WifiI2CRelayResponse resp = wifi_iic_relay_api_WifiI2CRelayResponse_init_zero;
-    const std::string response_data = "hahaha";
+    const std::array<pb_byte_t, 2> response_data = {0x55, 0xAA};
     switch (api_request->which_request) {
     case wifi_iic_relay_api_WifiI2CRelayRequest_read_request_tag:
         resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_read_response_tag;
         resp.response.read_response.result = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_FAILURE;
-        resp.response.read_response.data.size = response_data.size() + 1;
-        response_data.copy((char *)resp.response.read_response.data.bytes, response_data.size());
+        resp.response.read_response.data.size = response_data.size();
+        std::memcpy(resp.response.read_response.data.bytes, response_data.data(), response_data.size());
         break;
     default:
         resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_undefined_response_tag;
