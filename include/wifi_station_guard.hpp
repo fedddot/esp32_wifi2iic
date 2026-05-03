@@ -7,6 +7,7 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 
+#include "esp_wifi_default.h"
 #include "nvs_flash_guard.hpp"
 
 namespace mcu_server {
@@ -35,7 +36,7 @@ namespace mcu_server {
             if (esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, WifiStationGuard::event_handler, nullptr, nullptr) != ESP_OK) {
                 throw std::runtime_error("Failed to register Wi-Fi event handler");
             }
-            if (esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, WifiStationGuard::event_handler, nullptr, nullptr) != ESP_OK) {
+            if (esp_event_handler_instance_register(IP_EVENT, ESP_EVENT_ANY_ID, WifiStationGuard::event_handler, nullptr, nullptr) != ESP_OK) {
                 throw std::runtime_error("Failed to register IP event handler");
             }
 
@@ -46,9 +47,15 @@ namespace mcu_server {
             wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
             wifi_config.sta.pmf_cfg.capable = true;
             wifi_config.sta.pmf_cfg.required = false;
-            esp_wifi_set_mode(WIFI_MODE_STA);
-            esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
-            esp_wifi_start();
+            if (esp_wifi_set_mode(WIFI_MODE_STA) != ESP_OK) {
+                throw std::runtime_error("Failed to set Wi-Fi mode");
+            }
+            if (esp_wifi_set_config(WIFI_IF_STA, &wifi_config) != ESP_OK) {
+                throw std::runtime_error("Failed to set Wi-Fi configuration");
+            }
+            if (esp_wifi_start() != ESP_OK) {
+                throw std::runtime_error("Failed to start Wi-Fi");
+            }
             ++s_reference_count;
         }
         WifiStationGuard(const WifiStationGuard& other) : m_nvs_guard(other.m_nvs_guard), m_netif(other.m_netif) {
@@ -64,6 +71,8 @@ namespace mcu_server {
             esp_wifi_stop();
             esp_wifi_deinit();
             esp_event_loop_delete_default();
+            esp_netif_destroy_default_wifi(m_netif);
+            m_netif = nullptr;
         }
     private:
         NvsFlashGuard m_nvs_guard;
