@@ -12,7 +12,6 @@
 
 #include "service.pb.h"
 #include "wifi_station_guard.hpp"
-#include "esp32_uart_logger.hpp"
 
 #ifndef NETWORK_SSID
 #  error "NETWORK_SSID is not defined. Please pass it to the cmake command"
@@ -81,9 +80,8 @@ static void blink_loop();
 extern "C" {
     void app_main(void) {
         try {
-            mcu_server::Esp32UartLogger logger(9600, UART_DATA_8_BITS, UART_PARITY_DISABLE, UART_STOP_BITS_1);
             mcu_server::NvsFlashGuard nvs_guard;
-            mcu_server::WifiStationGuard network_guard(NETWORK_SSID, NETWORK_PASSWORD, nvs_guard, logger);
+            mcu_server::WifiStationGuard network_guard(NETWORK_SSID, NETWORK_PASSWORD, nvs_guard);
             const auto get_handler = httpd_uri_t {
                 .uri      = "/config/wifi",
                 .method   = HTTP_POST,

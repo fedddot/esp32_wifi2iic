@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 idf_build_process(
     ${TARGET}
-    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi esp-tls esp_driver_uart
+    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi esp-tls console log
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     BUILD_DIR ${CMAKE_BINARY_DIR}
 )
@@ -64,14 +64,6 @@ target_link_libraries(
     writer
 )
 
-add_library(esp32_uart_logger INTERFACE)
-target_include_directories(esp32_uart_logger INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(
-    esp32_uart_logger
-    INTERFACE
-    idf::esp_driver_uart
-)
-
 add_library(nvs_flash_guard INTERFACE)
 target_include_directories(nvs_flash_guard INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(
@@ -109,7 +101,6 @@ target_link_libraries(
     idf::esp_http_server
     idf::esp_driver_gpio
 
-    esp32_uart_logger
     wifi_access_point_guard
     wifi_station_guard
 

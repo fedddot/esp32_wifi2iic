@@ -8,12 +8,11 @@
 #include "esp_event.h"
 
 #include "nvs_flash_guard.hpp"
-#include "esp32_uart_logger.hpp"
 
 namespace mcu_server {
     class WifiStationGuard {
     public:
-        WifiStationGuard(const std::string& ssid, const std::string& password, const NvsFlashGuard& nvs_guard, const Esp32UartLogger& uart_logger): m_nvs_guard(nvs_guard), m_uart_logger(uart_logger), m_netif(nullptr) {
+        WifiStationGuard(const std::string& ssid, const std::string& password, const NvsFlashGuard& nvs_guard): m_nvs_guard(nvs_guard), m_netif(nullptr) {
             if (s_reference_count) {
                 throw std::runtime_error("WifiStationGuard is already initialized");
             }
@@ -33,10 +32,10 @@ namespace mcu_server {
                 throw std::runtime_error("Failed to initialize Wi-Fi");
             }
 
-            if (esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, WifiStationGuard::event_handler, &m_uart_logger, nullptr) != ESP_OK) {
+            if (esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, WifiStationGuard::event_handler, nullptr, nullptr) != ESP_OK) {
                 throw std::runtime_error("Failed to register Wi-Fi event handler");
             }
-            if (esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, WifiStationGuard::event_handler, &m_uart_logger, nullptr) != ESP_OK) {
+            if (esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, WifiStationGuard::event_handler, nullptr, nullptr) != ESP_OK) {
                 throw std::runtime_error("Failed to register IP event handler");
             }
 
@@ -52,7 +51,7 @@ namespace mcu_server {
             esp_wifi_start();
             ++s_reference_count;
         }
-        WifiStationGuard(const WifiStationGuard& other) : m_nvs_guard(other.m_nvs_guard), m_uart_logger(other.m_uart_logger), m_netif(other.m_netif) {
+        WifiStationGuard(const WifiStationGuard& other) : m_nvs_guard(other.m_nvs_guard), m_netif(other.m_netif) {
             ++s_reference_count;
         }
         WifiStationGuard& operator=(const WifiStationGuard&) = delete;
@@ -68,13 +67,10 @@ namespace mcu_server {
         }
     private:
         NvsFlashGuard m_nvs_guard;
-        Esp32UartLogger m_uart_logger;
         esp_netif_t *m_netif;
         static std::size_t s_reference_count;
 
         static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
-            Esp32UartLogger *uart_logger = static_cast<Esp32UartLogger *>(arg);
-            uart_logger->log("Wi-Fi event received: " + std::string(event_base) + ", " + std::to_string(event_id));
             if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
                 esp_wifi_connect();
             } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
