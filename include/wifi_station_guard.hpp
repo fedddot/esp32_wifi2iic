@@ -12,7 +12,7 @@
 namespace mcu_server {
     class WifiStationGuard {
     public:
-        WifiStationGuard(const std::string& ssid, const std::string& password, const NvsFlashGuard& nvs_guard, void (*err_callback)(void)): m_nvs_guard(nvs_guard), m_netif(nullptr) {
+        WifiStationGuard(const std::string& ssid, const std::string& password, const NvsFlashGuard& nvs_guard): m_nvs_guard(nvs_guard), m_netif(nullptr) {
             if (s_reference_count) {
                 throw std::runtime_error("WifiStationGuard is already initialized");
             }
@@ -32,10 +32,10 @@ namespace mcu_server {
                 throw std::runtime_error("Failed to initialize Wi-Fi");
             }
 
-            if (esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, WifiStationGuard::event_handler, (void *)err_callback, nullptr) != ESP_OK) {
+            if (esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, WifiStationGuard::event_handler, nullptr, nullptr) != ESP_OK) {
                 throw std::runtime_error("Failed to register Wi-Fi event handler");
             }
-            if (esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, WifiStationGuard::event_handler, (void *)err_callback, nullptr) != ESP_OK) {
+            if (esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, WifiStationGuard::event_handler, nullptr, nullptr) != ESP_OK) {
                 throw std::runtime_error("Failed to register IP event handler");
             }
 
@@ -77,9 +77,6 @@ namespace mcu_server {
                 esp_wifi_connect(); // Reconnect
             } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
                 // Connected successfully — nothing to do
-            } else {
-                auto cb = (void (*)(void))arg;
-                cb();
             }
         }
     };
