@@ -43,6 +43,9 @@ namespace mcu_server {
             std::memset(&wifi_config, 0, sizeof(wifi_config));
             ssid.copy((char*)wifi_config.sta.ssid, ssid.size());
             password.copy((char*)wifi_config.sta.password, password.size());
+            wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+            wifi_config.sta.pmf_cfg.capable = true;
+            wifi_config.sta.pmf_cfg.required = false;
             esp_wifi_set_mode(WIFI_MODE_STA);
             esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
             esp_wifi_start();
@@ -73,11 +76,11 @@ namespace mcu_server {
             } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
                 esp_wifi_connect(); // Reconnect
             } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-                return;
-                // Connected!
+                // Connected successfully — nothing to do
+            } else {
+                auto cb = (void (*)(void))arg;
+                cb();
             }
-            auto cb = (void (*)(void))arg;
-            cb();
         }
     };
 
