@@ -13,6 +13,7 @@ message WifiI2CRelayResponse {
     oneof response {
         WifiI2CRelayWriteResponse write_response = 1;
         WifiI2CRelayReadResponse read_response = 2;
+        Result undefined_response = 3;
     }
 }
 

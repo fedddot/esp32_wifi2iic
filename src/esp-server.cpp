@@ -5,12 +5,10 @@
 #include "driver/gpio.h"
 
 #include "http_parser.h"
-#include "http_request_data_reader.hpp"
-#include "http_request_data_writer.hpp"
-#include "pb_message_reader.hpp"
-#include "pb_message_writer.hpp"
+#include "wifi_iic_relay.pb.h"
+#include "wifi_iic_request_reader.hpp"
+#include "wifi_iic_response_writer.hpp"
 
-#include "service.pb.h"
 #include "wifi_station_guard.hpp"
 
 #ifndef NETWORK_SSID
@@ -39,39 +37,37 @@ static httpd_handle_t start_webserver(const httpd_uri_t& get_handler) {
     return server;
 }
 
-static bool decode_string(pb_istream_t *stream, const pb_field_t *field, void **arg);
-static bool encode_string(pb_ostream_t *stream, const pb_field_t *field, void * const *arg);
-
 static esp_err_t config_wifi_cb(httpd_req_t *request) {
-    nanoipc::HttpRequestDataReader data_reader(request);
-    nanoipc::HttpRequestDataWriter data_writer(request);
-    std::string ssid;
-    std::string pass;
-    nanoipc::PbMessageReader<service_api_WifiConfigRequest> pb_reader(
-        &data_reader,
-        service_api_WifiConfigRequest_fields,
-        [&ssid, &pass](service_api_WifiConfigRequest *request) {
-            request->ssid.funcs.decode = decode_string;
-            request->ssid.arg = &ssid;
-            request->pass.funcs.decode = decode_string;
-            request->pass.arg = &pass;
-        }
-    );
-    nanoipc::PbMessageWriter<service_api_ServiceResponse> pb_writer(&data_writer, service_api_ServiceResponse_fields);
-
-    const auto pb_msg_opt = pb_reader.read();
-        if (!pb_msg_opt.has_value()) {
-        service_api_ServiceResponse response {
-            .result = service_api_Result::service_api_Result_BAD_REQUEST
+    nanoipc::WifiI2CRequestReader request_reader(request);
+    nanoipc::WifiI2CResponseWriter response_writer(request);
+    
+    const auto api_request = request_reader.read();
+    if (!api_request.has_value()) {
+        wifi_iic_relay_api_WifiI2CRelayResponse resp {
+            .which_response = wifi_iic_relay_api_WifiI2CRelayResponse_undefined_response_tag,
+            .response = {
+                .undefined_response = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_BAD_REQUEST
+            }
         };
-        pb_writer.write(response);
+        response_writer.write(resp);
         return ESP_OK;
     }
-
-    service_api_ServiceResponse response {
-        .result = service_api_Result::service_api_Result_SUCCESS
-    };
-    pb_writer.write(response);
+    wifi_iic_relay_api_WifiI2CRelayResponse resp = wifi_iic_relay_api_WifiI2CRelayResponse_init_zero;
+    switch (api_request->which_request) {
+    case wifi_iic_relay_api_WifiI2CRelayRequest_write_request_tag:
+        resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_write_response_tag;
+        resp.response.write_response.result = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_FAILURE;
+        break;
+    case wifi_iic_relay_api_WifiI2CRelayRequest_read_request_tag:
+        resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_read_response_tag;
+        resp.response.read_response.result = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_FAILURE;
+        break;
+    default:
+        resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_undefined_response_tag;
+        resp.response.undefined_response = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_BAD_REQUEST;
+        break;
+    }
+    response_writer.write(resp);
     return ESP_OK;
 }
 
@@ -96,34 +92,6 @@ extern "C" {
             blink_loop();
         }
     }
-}
-
-bool encode_string(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-	if (!arg || !*arg) {
-		throw std::runtime_error("encode_string called with null arg");
-	}
-	const auto str = static_cast<const std::string *>(*arg);
-	if (!pb_encode_tag_for_field(stream, field)) {
-		return false;
-	}
-	return pb_encode_string(stream, (const pb_byte_t *)(str->c_str()), str->size());
-}
-
-bool decode_string(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-	if (!arg) {
-		throw std::runtime_error("encode_string called with null arg");
-	}
-	std::string *dst = *(std::string **)(arg);
-    if (!dst) {
-		throw std::runtime_error("destination buffer is not set");
-	}
-    enum { MAX_BUFFER_SIZE = 256UL };
-	pb_byte_t buff[MAX_BUFFER_SIZE] = {'\0'};
-	if (!pb_read(stream, buff, stream->bytes_left)) {
-		return false;
-	}
-	*dst = std::string((const char *)buff);
-    return true;
 }
 
 inline void blink_loop() {
