@@ -64,6 +64,14 @@ target_link_libraries(
     writer
 )
 
+add_library(esp32_uart_logger INTERFACE)
+target_include_directories(esp32_uart_logger INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(
+    esp32_uart_logger
+    INTERFACE
+    # TODO: add required UART deps
+)
+
 add_library(nvs_flash_guard INTERFACE)
 target_include_directories(nvs_flash_guard INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(
@@ -88,6 +96,7 @@ target_link_libraries(
     wifi_station_guard
     INTERFACE
     nvs_flash_guard
+    esp32_uart_logger
     idf::esp_netif
     idf::esp_wifi
 )
