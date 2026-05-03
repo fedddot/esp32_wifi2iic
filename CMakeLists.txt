@@ -34,7 +34,7 @@ set(GENERATED_API_DIR ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_command(
 	OUTPUT ${GENERATED_API_DIR}/wifi_iic_relay.pb.c ${GENERATED_API_DIR}/wifi_iic_relay.pb.h
 	DEPENDS ${CMAKE_CURRENT_LIST_DIR}/src/wifi_iic_relay.proto ${CMAKE_CURRENT_LIST_DIR}/src/wifi_iic_relay.options
-	COMMAND ${Python_EXECUTABLE} ${nanopb_SOURCE_DIR}/generator/nanopb_generator.py -I ${CMAKE_CURRENT_LIST_DIR}/src -D ${GENERATED_API_DIR} wifi_iic_relay.proto
+	COMMAND ${Python_EXECUTABLE} ${nanopb_SOURCE_DIR}/generator/nanopb_generator.py --cpp-descriptors -I ${CMAKE_CURRENT_LIST_DIR}/src -D ${GENERATED_API_DIR} wifi_iic_relay.proto
 )
 
 add_custom_target(
@@ -61,8 +61,10 @@ target_include_directories(wifi_iic_request_reader INTERFACE ${CMAKE_CURRENT_LIS
 target_link_libraries(
     wifi_iic_request_reader
     INTERFACE
-    http_request_data_reader
+    idf::esp_http_server
     reader
+    pb_message_reader
+    http_request_data_reader
     wifi_iic_relay_api
 )
 
