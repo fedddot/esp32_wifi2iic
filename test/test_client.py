@@ -92,22 +92,24 @@ def main():
     payload = request.SerializeToString()
     print(f"Sending {len(payload)} bytes to {args.url} ...")
 
-    if args.command == "read":
-        response = requests.get(
-            args.url,
-            data=payload,
-            headers={"Content-Type": "application/x-protobuf"},
-            timeout=10,
-        )
-    else:
-        response = requests.post(
-            args.url,
-            data=payload,
-            headers={"Content-Type": "application/x-protobuf"},
-            timeout=10,
-        )
-    response.raise_for_status()
-    print_response(response.content)
+    for i in range(30):
+        print(f"Sending request {i+1}/30")
+        if args.command == "read":
+            response = requests.get(
+                args.url,
+                data=payload,
+                headers={"Content-Type": "application/x-protobuf"},
+                timeout=10,
+            )
+        else:
+            response = requests.post(
+                args.url,
+                data=payload,
+                headers={"Content-Type": "application/x-protobuf"},
+                timeout=10,
+            )
+        response.raise_for_status()
+        print_response(response.content)
 
 
 if __name__ == "__main__":
