@@ -32,19 +32,19 @@ FetchContent_MakeAvailable(nanoipc)
 set(GENERATED_API_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command(
-	OUTPUT ${GENERATED_API_DIR}/service.pb.c ${GENERATED_API_DIR}/service.pb.h
-	DEPENDS ${CMAKE_CURRENT_LIST_DIR}/src/service.proto
-	COMMAND ${Python_EXECUTABLE} ${nanopb_SOURCE_DIR}/generator/nanopb_generator.py -I ${CMAKE_CURRENT_LIST_DIR}/src -D ${GENERATED_API_DIR} service.proto
+	OUTPUT ${GENERATED_API_DIR}/wifi_iic_relay.pb.c ${GENERATED_API_DIR}/wifi_iic_relay.pb.h
+	DEPENDS ${CMAKE_CURRENT_LIST_DIR}/src/wifi_iic_relay.proto ${CMAKE_CURRENT_LIST_DIR}/src/wifi_iic_relay.options
+	COMMAND ${Python_EXECUTABLE} ${nanopb_SOURCE_DIR}/generator/nanopb_generator.py -I ${CMAKE_CURRENT_LIST_DIR}/src -D ${GENERATED_API_DIR} wifi_iic_relay.proto
 )
 
 add_custom_target(
 	generate_wifi_iic_relay_api
-	DEPENDS ${GENERATED_API_DIR}/service.pb.c ${GENERATED_API_DIR}/service.pb.h
+	DEPENDS ${GENERATED_API_DIR}/wifi_iic_relay.pb.c ${GENERATED_API_DIR}/wifi_iic_relay.pb.h
 )
 
 add_library(wifi_iic_relay_api INTERFACE)
 add_dependencies(wifi_iic_relay_api generate_wifi_iic_relay_api)
-target_sources(wifi_iic_relay_api INTERFACE ${GENERATED_API_DIR}/service.pb.c)
+target_sources(wifi_iic_relay_api INTERFACE ${GENERATED_API_DIR}/wifi_iic_relay.pb.c)
 target_include_directories(wifi_iic_relay_api INTERFACE ${GENERATED_API_DIR})
 
 add_library(http_request_data_reader INTERFACE)
@@ -54,6 +54,16 @@ target_link_libraries(
     INTERFACE
     idf::esp_http_server
     reader
+)
+
+add_library(wifi_iic_request_reader INTERFACE)
+target_include_directories(wifi_iic_request_reader INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(
+    wifi_iic_request_reader
+    INTERFACE
+    http_request_data_reader
+    reader
+    wifi_iic_relay_api
 )
 
 add_library(http_request_data_writer INTERFACE)
@@ -105,7 +115,7 @@ target_link_libraries(
     wifi_station_guard
 
     http_request_data_reader
-    pb_message_reader
+    wifi_iic_request_reader
 
     http_request_data_writer
     pb_message_writer
