@@ -1,7 +1,7 @@
 *.*
 .vscode
 build
-sdkconfig
+!sdkconfig
 !.devcontainer
 !.gitignore
 !.github
