@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 idf_build_process(
     ${TARGET}
-    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi esp-tls console log
+    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     SDKCONFIG_DEFAULTS ${CMAKE_CURRENT_LIST_DIR}/sdkconfig.defaults
     BUILD_DIR ${CMAKE_BINARY_DIR}
@@ -83,9 +83,9 @@ target_link_libraries(
     wifi_iic_response_writer
     INTERFACE
     idf::esp_http_server
-    reader
-    pb_message_reader
-    http_request_data_reader
+    writer
+    pb_message_writer
+    http_response_data_writer
     wifi_iic_relay_api
 )
 
