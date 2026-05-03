@@ -68,10 +68,10 @@ target_link_libraries(
     wifi_iic_relay_api
 )
 
-add_library(http_request_data_writer INTERFACE)
-target_include_directories(http_request_data_writer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+add_library(http_response_data_writer INTERFACE)
+target_include_directories(http_response_data_writer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(
-    http_request_data_writer
+    http_response_data_writer
     INTERFACE
     idf::esp_http_server
     writer
@@ -119,7 +119,7 @@ target_link_libraries(
     http_request_data_reader
     wifi_iic_request_reader
 
-    http_request_data_writer
+    http_response_data_writer
     pb_message_writer
 
     wifi_iic_relay_api
