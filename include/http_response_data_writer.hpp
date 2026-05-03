@@ -9,15 +9,15 @@
 #include "writer.hpp"
 
 namespace nanoipc {
-	class HttpRequestDataWriter: public Writer<std::vector<std::uint8_t>> {
+	class HttpResponseDataWriter: public Writer<std::vector<std::uint8_t>> {
 	public:
-		HttpRequestDataWriter(httpd_req_t *request): m_request(request) {
+		HttpResponseDataWriter(httpd_req_t *request): m_request(request) {
 			if (!m_request) {
 				throw std::invalid_argument("request cannot be null");
 			}
 		}
-		HttpRequestDataWriter(const HttpRequestDataWriter&) = default;
-		HttpRequestDataWriter& operator=(const HttpRequestDataWriter&) = default;
+		HttpResponseDataWriter(const HttpResponseDataWriter&) = default;
+		HttpResponseDataWriter& operator=(const HttpResponseDataWriter&) = default;
 
 		void write(const std::vector<std::uint8_t>& data) const override {
 			if (httpd_resp_send(m_request, reinterpret_cast<const char *>(data.data()), data.size()) != ESP_OK) {
