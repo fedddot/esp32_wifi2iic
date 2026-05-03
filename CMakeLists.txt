@@ -109,6 +109,7 @@ target_link_libraries(
     idf::esp_http_server
     idf::esp_driver_gpio
 
+    esp32_uart_logger
     wifi_access_point_guard
     wifi_station_guard
 
