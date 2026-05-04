@@ -86,7 +86,8 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
     service_api_WifiI2CRelayReadResponse resp = {
         .result = service_api_Result::service_api_Result_FAILURE,
         .data = {
-            .size = 0
+            .size = 2,
+            .bytes = {0x55, 0xAA}
         }
     };
     response_writer.write(resp);
