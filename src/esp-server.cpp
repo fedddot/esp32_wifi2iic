@@ -1,7 +1,6 @@
 #include <array>
 #include <cstring>
 #include <optional>
-#include <stdexcept>
 
 #include "esp_http_server.h"
 #include "driver/gpio.h"
@@ -28,7 +27,6 @@
 #  error "SERVICE_PORT is not defined. Please pass it to the cmake command"
 #endif
 
-static httpd_handle_t start_webserver(const httpd_uri_t& read_handler, const httpd_uri_t& write_handler);
 static esp_err_t write_data_cb(httpd_req_t *request);
 static esp_err_t read_data_cb(httpd_req_t *request);
 static void blink_loop();
@@ -38,19 +36,9 @@ extern "C" {
         try {
             mcu_server::NvsFlashGuard nvs_guard;
             mcu_server::WifiStationGuard network_guard(NETWORK_SSID, NETWORK_PASSWORD, nvs_guard);
-            const auto read_handler = httpd_uri_t {
-                .uri      = "/iic",
-                .method   = HTTP_GET,
-                .handler  = read_data_cb,
-                .user_ctx = nullptr
-            };            
-            const auto write_handler = httpd_uri_t {
-                .uri      = "/iic",
-                .method   = HTTP_POST,
-                .handler  = write_data_cb,
-                .user_ctx = nullptr
-            };
-            const auto server = start_webserver(read_handler, write_handler);
+            nanoipc::HttpServer server(SERVICE_PORT, true);
+            server.register_handler("/iic", HTTP_GET, read_data_cb);
+            server.register_handler("/iic", HTTP_POST, write_data_cb);
             while (true) {
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
             }

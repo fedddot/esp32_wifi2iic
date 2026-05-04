@@ -13,7 +13,7 @@ Dependencies:
     pip install protobuf requests
 
 Generate the Python bindings with:
-    python3 -m grpc_tools.protoc -I src --python_out=. src/wifi_iic_relay.proto
+    python3 -m grpc_tools.protoc -I src --python_out=. src/service.proto
 """
 
 import argparse
@@ -26,24 +26,24 @@ except ImportError:
     sys.exit("Missing dependency: pip install requests")
 
 try:
-    import wifi_iic_relay_pb2
+    import service_pb2
 except ImportError:
     sys.exit(
-        "wifi_iic_relay_pb2.py not found. Generate it with:\n"
-        "  python3 -m grpc_tools.protoc -I src --python_out=. src/wifi_iic_relay.proto"
+        "service_pb2.py not found. Generate it with:\n"
+        "  python3 -m grpc_tools.protoc -I src --python_out=. src/service.proto"
     )
 
 
-def build_write_request(i2c_address: int, timeout_ms: int, data: bytes) -> wifi_iic_relay_pb2.WifiI2CRelayRequest:
-    req = wifi_iic_relay_pb2.WifiI2CRelayRequest()
+def build_write_request(i2c_address: int, timeout_ms: int, data: bytes) -> service_pb2.WifiI2CRelayRequest:
+    req = service_pb2.WifiI2CRelayRequest()
     req.write_request.address = i2c_address
     req.write_request.timeout_ms = timeout_ms
     req.write_request.data = data
     return req
 
 
-def build_read_request(i2c_address: int, timeout_ms: int, length: int) -> wifi_iic_relay_pb2.WifiI2CRelayRequest:
-    req = wifi_iic_relay_pb2.WifiI2CRelayRequest()
+def build_read_request(i2c_address: int, timeout_ms: int, length: int) -> service_pb2.WifiI2CRelayRequest:
+    req = service_pb2.WifiI2CRelayRequest()
     req.read_request.address = i2c_address
     req.read_request.timeout_ms = timeout_ms
     req.read_request.length = length
@@ -51,17 +51,17 @@ def build_read_request(i2c_address: int, timeout_ms: int, length: int) -> wifi_i
 
 
 def print_response(raw: bytes) -> None:
-    resp = wifi_iic_relay_pb2.WifiI2CRelayResponse()
+    resp = service_pb2.WifiI2CRelayResponse()
     resp.ParseFromString(raw)
     which = resp.WhichOneof("response")
     if which == "write_response":
-        result_name = wifi_iic_relay_pb2.Result.Name(resp.write_response.result)
+        result_name = service_pb2.Result.Name(resp.write_response.result)
         print(f"Write response: {result_name}")
     elif which == "read_response":
-        result_name = wifi_iic_relay_pb2.Result.Name(resp.read_response.result)
+        result_name = service_pb2.Result.Name(resp.read_response.result)
         print(f"Read response: {result_name}, data: {resp.read_response.data.hex()}")
     elif which == "undefined_response":
-        result_name = wifi_iic_relay_pb2.Result.Name(resp.undefined_response)
+        result_name = service_pb2.Result.Name(resp.undefined_response)
         print(f"Undefined response: {result_name}")
     else:
         print("Empty or unrecognised response")
