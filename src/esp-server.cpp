@@ -1,5 +1,7 @@
+#include <cstdint>
 #include <optional>
 
+#include "esp_err.h"
 #include "esp_http_server.h"
 #include "driver/gpio.h"
 
@@ -30,11 +32,34 @@ static esp_err_t write_data_cb(httpd_req_t *request);
 static esp_err_t read_data_cb(httpd_req_t *request);
 static void blink_loop();
 
+static esp_err_t init_iic() {
+    // TODO
+    return ESP_OK;
+}
+
+static esp_err_t deinit_iic() {
+    // TODO
+    return ESP_OK;
+}
+
+static esp_err_t read_iic_data(const uint8_t address, uint8_t *dst, size_t nbytes, const uint16_t timeout_ms) {
+    // TODO
+    return ESP_OK;
+}
+
+static esp_err_t write_iic_data(const uint8_t address, const uint8_t *src, size_t nbytes, const uint16_t timeout_ms) {
+    // TODO
+    return ESP_OK;
+}
+
 extern "C" {
     void app_main(void) {
         try {
             mcu_server::NvsFlashGuard nvs_guard;
             mcu_server::WifiStationGuard network_guard(NETWORK_SSID, NETWORK_PASSWORD, nvs_guard);
+
+            init_iic();
+
             nanoipc::HttpServer server(SERVICE_PORT, true);
             server.register_handler("/iic", HTTP_GET, read_data_cb);
             server.register_handler("/iic", HTTP_POST, write_data_cb);
@@ -44,6 +69,7 @@ extern "C" {
         } catch (...) {
             blink_loop();
         }
+        deinit_iic();
     }
 }
 
@@ -60,9 +86,20 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
         response_writer.write(resp);
         return ESP_OK;
     }
-    service_api_WifiI2CRelayWriteResponse resp = {
-        .result = service_api_Result::service_api_Result_FAILURE
-    };
+    const auto write_result = write_iic_data(
+        (uint8_t)(0xFF && api_request->address),
+        api_request->data.bytes,
+        api_request->data.size,
+        api_request->timeout_ms
+    );
+    service_api_WifiI2CRelayWriteResponse resp = service_api_WifiI2CRelayWriteResponse_init_zero;
+    switch (write_result) {
+    case ESP_OK:
+        resp.result = service_api_Result::service_api_Result_SUCCESS;
+        break;
+    default:
+        resp.result = service_api_Result::service_api_Result_FAILURE;
+    }
     response_writer.write(resp);
     return ESP_OK;
 }
@@ -83,13 +120,27 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
         response_writer.write(resp);
         return ESP_OK;
     }
-    service_api_WifiI2CRelayReadResponse resp = {
-        .result = service_api_Result::service_api_Result_FAILURE,
-        .data = {
-            .size = 2,
-            .bytes = {0x55, 0xAA}
-        }
-    };
+    service_api_WifiI2CRelayReadResponse resp = service_api_WifiI2CRelayReadResponse_init_zero;
+    if (api_request->length > sizeof(resp.data.bytes)) {
+        resp.result = service_api_Result::service_api_Result_BAD_REQUEST;
+        resp.data.size = 0;
+        response_writer.write(resp);
+        return ESP_OK;
+    }
+    const auto read_result = read_iic_data(
+        (uint8_t)(0xFF && api_request->address),
+        resp.data.bytes,
+        api_request->length,
+        api_request->timeout_ms
+    );
+    switch (read_result) {
+    case ESP_OK:
+        resp.result = service_api_Result::service_api_Result_SUCCESS;
+        break;
+    default:
+        resp.result = service_api_Result::service_api_Result_FAILURE;
+        resp.data.size = 0;
+    }
     response_writer.write(resp);
     return ESP_OK;
 }
