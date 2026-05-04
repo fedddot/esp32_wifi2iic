@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 idf_build_set_property(MINIMAL_BUILD ON)
 idf_build_process(
     ${TARGET}
-    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi
+    COMPONENTS nvs_flash esp_netif esp_http_server esp_wifi esp_driver_i2c
     SDKCONFIG ${CMAKE_CURRENT_LIST_DIR}/sdkconfig
     SDKCONFIG_DEFAULTS ${CMAKE_CURRENT_LIST_DIR}/sdkconfig.defaults
     BUILD_DIR ${CMAKE_BINARY_DIR}
@@ -105,6 +105,7 @@ target_link_libraries(
     idf::esp_driver_gpio
     idf::esp_http_server
     idf::esp_driver_gpio
+    idf::esp_driver_i2c
 
     wifi_access_point_guard
     wifi_station_guard
@@ -127,6 +128,14 @@ if(NOT DEFINED SERVICE_PORT)
     message(FATAL_ERROR "SERVICE_PORT is not defined.")
 endif()
 
+if(NOT DEFINED I2C_SDA_GPIO)
+    message(FATAL_ERROR "I2C_SDA_GPIO is not defined. Please pass it to the cmake command")
+endif()
+
+if(NOT DEFINED I2C_SCL_GPIO)
+    message(FATAL_ERROR "I2C_SCL_GPIO is not defined. Please pass it to the cmake command")
+endif()
+
 idf_build_executable(${CMAKE_PROJECT_NAME}.elf)
 target_compile_definitions(
     ${CMAKE_PROJECT_NAME}.elf
@@ -134,4 +143,6 @@ target_compile_definitions(
     NETWORK_SSID=\"${NETWORK_SSID}\"
     NETWORK_PASSWORD=\"${NETWORK_PASSWORD}\"
     SERVICE_PORT=${SERVICE_PORT}
+    I2C_SDA_GPIO=${I2C_SDA_GPIO}
+    I2C_SCL_GPIO=${I2C_SCL_GPIO}
 )

@@ -4,6 +4,7 @@
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "driver/gpio.h"
+#include "driver/i2c_master.h"
 
 #include "http_parser.h"
 #include "http_request_data_reader.hpp"
@@ -28,28 +29,72 @@
 #  error "SERVICE_PORT is not defined. Please pass it to the cmake command"
 #endif
 
+#ifndef I2C_SDA_GPIO
+#  error "I2C_SDA_GPIO is not defined. Please pass it to the cmake command"
+#endif
+
+#ifndef I2C_SCL_GPIO
+#  error "I2C_SCL_GPIO is not defined. Please pass it to the cmake command"
+#endif
+
+#ifndef I2C_SCL_SPEED_HZ
+#  define I2C_SCL_SPEED_HZ 100000
+#endif
+
+static i2c_master_bus_handle_t s_i2c_bus_handle = nullptr;
+
 static esp_err_t write_data_cb(httpd_req_t *request);
 static esp_err_t read_data_cb(httpd_req_t *request);
 static void blink_loop();
 
 static esp_err_t init_iic() {
-    // TODO
-    return ESP_OK;
+    i2c_master_bus_config_t bus_config = {};
+    bus_config.i2c_port = I2C_NUM_0;
+    bus_config.sda_io_num = (gpio_num_t)I2C_SDA_GPIO;
+    bus_config.scl_io_num = (gpio_num_t)I2C_SCL_GPIO;
+    bus_config.clk_source = I2C_CLK_SRC_DEFAULT;
+    bus_config.glitch_ignore_cnt = 7;
+    bus_config.flags.enable_internal_pullup = true;
+    return i2c_new_master_bus(&bus_config, &s_i2c_bus_handle);
 }
 
 static esp_err_t deinit_iic() {
-    // TODO
-    return ESP_OK;
+    if (s_i2c_bus_handle == nullptr) {
+        return ESP_OK;
+    }
+    const auto result = i2c_del_master_bus(s_i2c_bus_handle);
+    s_i2c_bus_handle = nullptr;
+    return result;
 }
 
 static esp_err_t read_iic_data(const uint8_t address, uint8_t *dst, size_t nbytes, const uint16_t timeout_ms) {
-    // TODO
-    return ESP_OK;
+    i2c_device_config_t dev_config = {};
+    dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+    dev_config.device_address = address;
+    dev_config.scl_speed_hz = I2C_SCL_SPEED_HZ;
+    i2c_master_dev_handle_t dev_handle;
+    auto result = i2c_master_bus_add_device(s_i2c_bus_handle, &dev_config, &dev_handle);
+    if (result != ESP_OK) {
+        return result;
+    }
+    result = i2c_master_receive(dev_handle, dst, nbytes, (int)timeout_ms);
+    i2c_master_bus_rm_device(dev_handle);
+    return result;
 }
 
 static esp_err_t write_iic_data(const uint8_t address, const uint8_t *src, size_t nbytes, const uint16_t timeout_ms) {
-    // TODO
-    return ESP_OK;
+    i2c_device_config_t dev_config = {};
+    dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+    dev_config.device_address = address;
+    dev_config.scl_speed_hz = I2C_SCL_SPEED_HZ;
+    i2c_master_dev_handle_t dev_handle;
+    auto result = i2c_master_bus_add_device(s_i2c_bus_handle, &dev_config, &dev_handle);
+    if (result != ESP_OK) {
+        return result;
+    }
+    result = i2c_master_transmit(dev_handle, src, nbytes, (int)timeout_ms);
+    i2c_master_bus_rm_device(dev_handle);
+    return result;
 }
 
 extern "C" {
@@ -75,7 +120,7 @@ extern "C" {
 
 inline esp_err_t write_data_cb(httpd_req_t *request) {
     nanoipc::HttpRequestDataReader request_data_reader(request);
-    nanoipc::PbMessageReader<service_api_WifiI2CRelayWriteRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayReadRequest_fields);
+    nanoipc::PbMessageReader<service_api_WifiI2CRelayWriteRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayWriteRequest_fields);
     nanoipc::HttpResponseDataWriter response_data_writer(request);
     nanoipc::PbMessageWriter<service_api_WifiI2CRelayWriteResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayWriteResponse_fields);
     const auto api_request = request_reader.read();
@@ -87,7 +132,7 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
         return ESP_OK;
     }
     const auto write_result = write_iic_data(
-        (uint8_t)(0xFF && api_request->address),
+        (uint8_t)(0xFF & api_request->address),
         api_request->data.bytes,
         api_request->data.size,
         api_request->timeout_ms
@@ -128,7 +173,7 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
         return ESP_OK;
     }
     const auto read_result = read_iic_data(
-        (uint8_t)(0xFF && api_request->address),
+        (uint8_t)(0xFF & api_request->address),
         resp.data.bytes,
         api_request->length,
         api_request->timeout_ms
@@ -136,6 +181,7 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
     switch (read_result) {
     case ESP_OK:
         resp.result = service_api_Result::service_api_Result_SUCCESS;
+        resp.data.size = api_request->length;
         break;
     default:
         resp.result = service_api_Result::service_api_Result_FAILURE;
