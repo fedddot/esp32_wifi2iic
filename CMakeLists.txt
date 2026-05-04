@@ -61,18 +61,6 @@ target_link_libraries(
     reader
 )
 
-add_library(wifi_iic_request_reader INTERFACE)
-target_include_directories(wifi_iic_request_reader INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(
-    wifi_iic_request_reader
-    INTERFACE
-    idf::esp_http_server
-    reader
-    pb_message_reader
-    http_request_data_reader
-    service_api
-)
-
 add_library(http_response_data_writer INTERFACE)
 target_include_directories(http_response_data_writer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(
@@ -80,18 +68,6 @@ target_link_libraries(
     INTERFACE
     idf::esp_http_server
     writer
-)
-
-add_library(wifi_iic_response_writer INTERFACE)
-target_include_directories(wifi_iic_response_writer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(
-    wifi_iic_response_writer
-    INTERFACE
-    idf::esp_http_server
-    writer
-    pb_message_writer
-    http_response_data_writer
-    service_api
 )
 
 add_library(nvs_flash_guard INTERFACE)
@@ -133,8 +109,10 @@ target_link_libraries(
     wifi_access_point_guard
     wifi_station_guard
 
-    wifi_iic_request_reader
-    wifi_iic_response_writer
+    http_request_data_reader
+    pb_message_reader
+    http_response_data_writer
+    pb_message_writer
     service_api
 )
 

@@ -1,15 +1,14 @@
-#include <array>
-#include <cstring>
 #include <optional>
 
 #include "esp_http_server.h"
 #include "driver/gpio.h"
 
 #include "http_parser.h"
-#include "pb.h"
+#include "http_request_data_reader.hpp"
+#include "http_response_data_writer.hpp"
+#include "pb_message_reader.hpp"
+#include "pb_message_writer.hpp"
 #include "service.pb.h"
-#include "wifi_iic_request_reader.hpp"
-#include "wifi_iic_response_writer.hpp"
 
 #include "wifi_station_guard.hpp"
 
@@ -49,64 +48,47 @@ extern "C" {
 }
 
 inline esp_err_t write_data_cb(httpd_req_t *request) {
-    nanoipc::WifiI2CRequestReader request_reader(request);
-    nanoipc::WifiI2CResponseWriter response_writer(request);
-    
+    nanoipc::HttpRequestDataReader request_data_reader(request);
+    nanoipc::PbMessageReader<service_api_WifiI2CRelayWriteRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayReadRequest_fields);
+    nanoipc::HttpResponseDataWriter response_data_writer(request);
+    nanoipc::PbMessageWriter<service_api_WifiI2CRelayWriteResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayWriteResponse_fields);
     const auto api_request = request_reader.read();
     if (!api_request.has_value()) {
-        service_api_WifiI2CRelayResponse resp {
-            .which_response = service_api_WifiI2CRelayResponse_undefined_response_tag,
-            .response = {
-                .undefined_response = service_api_Result::service_api_Result_BAD_REQUEST
-            }
+        service_api_WifiI2CRelayWriteResponse resp {
+            .result = service_api_Result::service_api_Result_BAD_REQUEST
         };
         response_writer.write(resp);
         return ESP_OK;
     }
-    service_api_WifiI2CRelayResponse resp = service_api_WifiI2CRelayResponse_init_zero;
-    switch (api_request->which_request) {
-    case service_api_WifiI2CRelayRequest_write_request_tag:
-        resp.which_response = service_api_WifiI2CRelayResponse_write_response_tag;
-        resp.response.write_response.result = service_api_Result::service_api_Result_FAILURE;
-        break;
-    default:
-        resp.which_response = service_api_WifiI2CRelayResponse_undefined_response_tag;
-        resp.response.undefined_response = service_api_Result::service_api_Result_BAD_REQUEST;
-        break;
-    }
+    service_api_WifiI2CRelayWriteResponse resp = {
+        .result = service_api_Result::service_api_Result_FAILURE
+    };
     response_writer.write(resp);
     return ESP_OK;
 }
 
 inline esp_err_t read_data_cb(httpd_req_t *request) {
-    nanoipc::WifiI2CRequestReader request_reader(request);
-    nanoipc::WifiI2CResponseWriter response_writer(request);
-    
+    nanoipc::HttpRequestDataReader request_data_reader(request);
+    nanoipc::PbMessageReader<service_api_WifiI2CRelayReadRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayReadRequest_fields);
+    nanoipc::HttpResponseDataWriter response_data_writer(request);
+    nanoipc::PbMessageWriter<service_api_WifiI2CRelayReadResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayReadResponse_fields);
     const auto api_request = request_reader.read();
     if (!api_request.has_value()) {
-        service_api_WifiI2CRelayResponse resp {
-            .which_response = service_api_WifiI2CRelayResponse_undefined_response_tag,
-            .response = {
-                .undefined_response = service_api_Result::service_api_Result_BAD_REQUEST
+        service_api_WifiI2CRelayReadResponse resp {
+            .result = service_api_Result::service_api_Result_BAD_REQUEST,
+            .data = {
+                .size = 0
             }
         };
         response_writer.write(resp);
         return ESP_OK;
     }
-    service_api_WifiI2CRelayResponse resp = service_api_WifiI2CRelayResponse_init_zero;
-    const std::array<pb_byte_t, 2> response_data = {0x55, 0xAA};
-    switch (api_request->which_request) {
-    case service_api_WifiI2CRelayRequest_read_request_tag:
-        resp.which_response = service_api_WifiI2CRelayResponse_read_response_tag;
-        resp.response.read_response.result = service_api_Result::service_api_Result_FAILURE;
-        resp.response.read_response.data.size = response_data.size();
-        std::memcpy(resp.response.read_response.data.bytes, response_data.data(), response_data.size());
-        break;
-    default:
-        resp.which_response = service_api_WifiI2CRelayResponse_undefined_response_tag;
-        resp.response.undefined_response = service_api_Result::service_api_Result_BAD_REQUEST;
-        break;
-    }
+    service_api_WifiI2CRelayReadResponse resp = {
+        .result = service_api_Result::service_api_Result_FAILURE,
+        .data = {
+            .size = 0
+        }
+    };
     response_writer.write(resp);
     return ESP_OK;
 }
