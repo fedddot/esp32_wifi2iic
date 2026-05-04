@@ -42,6 +42,11 @@ add_custom_target(
 	DEPENDS ${GENERATED_API_DIR}/service.pb.c ${GENERATED_API_DIR}/service.pb.h
 )
 
+add_library(http_server INTERFACE)
+target_include_directories(http_server INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(http_server INTERFACE idf::esp_http_server)
+
+
 add_library(service_api INTERFACE)
 add_dependencies(service_api generate_service_api)
 target_sources(service_api INTERFACE ${GENERATED_API_DIR}/service.pb.c)

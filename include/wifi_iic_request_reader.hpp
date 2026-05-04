@@ -9,7 +9,7 @@
 #include "reader.hpp"
 #include "pb_message_reader.hpp"
 #include "http_request_data_reader.hpp"
-#include "wifi_iic_relay.pb.h"
+#include "service.pb.h"
 
 namespace nanoipc {
     template <std::size_t BUFFER_SIZE = 256UL>

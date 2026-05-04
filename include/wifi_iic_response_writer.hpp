@@ -7,7 +7,7 @@
 #include "writer.hpp"
 #include "pb_message_writer.hpp"
 #include "http_response_data_writer.hpp"
-#include "wifi_iic_relay.pb.h"
+#include "service.pb.h"
 
 namespace nanoipc {
 	class WifiI2CResponseWriter: public Writer<service_api_WifiI2CRelayResponse> {
