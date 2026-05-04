@@ -1,6 +1,15 @@
 syntax = "proto3";
 
-package wifi_iic_relay_api;
+package service_api;
+
+message WifiConfigRequest {
+    string ssid = 1;
+    string pass = 2;
+}
+
+message WifiConfigResponse {
+    Result result = 1;
+}
 
 message WifiI2CRelayRequest {
     oneof request {

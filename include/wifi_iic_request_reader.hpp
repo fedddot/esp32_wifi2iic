@@ -13,7 +13,7 @@
 
 namespace nanoipc {
     template <std::size_t BUFFER_SIZE = 256UL>
-	class WifiI2CRequestReader: public Reader<wifi_iic_relay_api_WifiI2CRelayRequest> {
+	class WifiI2CRequestReader: public Reader<service_api_WifiI2CRelayRequest> {
 	public:
 		WifiI2CRequestReader(httpd_req_t *request): m_request(request) {
 			if (!m_request) {
@@ -23,13 +23,13 @@ namespace nanoipc {
 		WifiI2CRequestReader(const WifiI2CRequestReader&) = default;
 		WifiI2CRequestReader& operator=(const WifiI2CRequestReader&) = default;
 
-		std::optional<wifi_iic_relay_api_WifiI2CRelayRequest> read() override {
+		std::optional<service_api_WifiI2CRelayRequest> read() override {
             HttpRequestDataReader<BUFFER_SIZE> reader(m_request);
-            PbMessageReader<wifi_iic_relay_api_WifiI2CRelayRequest> pb_reader(
+            PbMessageReader<service_api_WifiI2CRelayRequest> pb_reader(
                 &reader,
-                wifi_iic_relay_api_WifiI2CRelayRequest_fields,
-                [](wifi_iic_relay_api_WifiI2CRelayRequest *request) {
-                    *request = wifi_iic_relay_api_WifiI2CRelayRequest_init_zero;
+                service_api_WifiI2CRelayRequest_fields,
+                [](service_api_WifiI2CRelayRequest *request) {
+                    *request = service_api_WifiI2CRelayRequest_init_zero;
                 }
             );
             return pb_reader.read();

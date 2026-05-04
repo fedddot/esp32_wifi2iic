@@ -1,2 +1,0 @@
-wifi_iic_relay_api.WifiI2CRelayWriteRequest.data max_size:128
-wifi_iic_relay_api.WifiI2CRelayReadResponse.data max_size:128

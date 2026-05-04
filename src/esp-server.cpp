@@ -88,24 +88,24 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
     
     const auto api_request = request_reader.read();
     if (!api_request.has_value()) {
-        wifi_iic_relay_api_WifiI2CRelayResponse resp {
-            .which_response = wifi_iic_relay_api_WifiI2CRelayResponse_undefined_response_tag,
+        service_api_WifiI2CRelayResponse resp {
+            .which_response = service_api_WifiI2CRelayResponse_undefined_response_tag,
             .response = {
-                .undefined_response = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_BAD_REQUEST
+                .undefined_response = service_api_Result::service_api_Result_BAD_REQUEST
             }
         };
         response_writer.write(resp);
         return ESP_OK;
     }
-    wifi_iic_relay_api_WifiI2CRelayResponse resp = wifi_iic_relay_api_WifiI2CRelayResponse_init_zero;
+    service_api_WifiI2CRelayResponse resp = service_api_WifiI2CRelayResponse_init_zero;
     switch (api_request->which_request) {
-    case wifi_iic_relay_api_WifiI2CRelayRequest_write_request_tag:
-        resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_write_response_tag;
-        resp.response.write_response.result = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_FAILURE;
+    case service_api_WifiI2CRelayRequest_write_request_tag:
+        resp.which_response = service_api_WifiI2CRelayResponse_write_response_tag;
+        resp.response.write_response.result = service_api_Result::service_api_Result_FAILURE;
         break;
     default:
-        resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_undefined_response_tag;
-        resp.response.undefined_response = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_BAD_REQUEST;
+        resp.which_response = service_api_WifiI2CRelayResponse_undefined_response_tag;
+        resp.response.undefined_response = service_api_Result::service_api_Result_BAD_REQUEST;
         break;
     }
     response_writer.write(resp);
@@ -118,27 +118,27 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
     
     const auto api_request = request_reader.read();
     if (!api_request.has_value()) {
-        wifi_iic_relay_api_WifiI2CRelayResponse resp {
-            .which_response = wifi_iic_relay_api_WifiI2CRelayResponse_undefined_response_tag,
+        service_api_WifiI2CRelayResponse resp {
+            .which_response = service_api_WifiI2CRelayResponse_undefined_response_tag,
             .response = {
-                .undefined_response = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_BAD_REQUEST
+                .undefined_response = service_api_Result::service_api_Result_BAD_REQUEST
             }
         };
         response_writer.write(resp);
         return ESP_OK;
     }
-    wifi_iic_relay_api_WifiI2CRelayResponse resp = wifi_iic_relay_api_WifiI2CRelayResponse_init_zero;
+    service_api_WifiI2CRelayResponse resp = service_api_WifiI2CRelayResponse_init_zero;
     const std::array<pb_byte_t, 2> response_data = {0x55, 0xAA};
     switch (api_request->which_request) {
-    case wifi_iic_relay_api_WifiI2CRelayRequest_read_request_tag:
-        resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_read_response_tag;
-        resp.response.read_response.result = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_FAILURE;
+    case service_api_WifiI2CRelayRequest_read_request_tag:
+        resp.which_response = service_api_WifiI2CRelayResponse_read_response_tag;
+        resp.response.read_response.result = service_api_Result::service_api_Result_FAILURE;
         resp.response.read_response.data.size = response_data.size();
         std::memcpy(resp.response.read_response.data.bytes, response_data.data(), response_data.size());
         break;
     default:
-        resp.which_response = wifi_iic_relay_api_WifiI2CRelayResponse_undefined_response_tag;
-        resp.response.undefined_response = wifi_iic_relay_api_Result::wifi_iic_relay_api_Result_BAD_REQUEST;
+        resp.which_response = service_api_WifiI2CRelayResponse_undefined_response_tag;
+        resp.response.undefined_response = service_api_Result::service_api_Result_BAD_REQUEST;
         break;
     }
     response_writer.write(resp);

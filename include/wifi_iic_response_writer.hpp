@@ -10,7 +10,7 @@
 #include "wifi_iic_relay.pb.h"
 
 namespace nanoipc {
-	class WifiI2CResponseWriter: public Writer<wifi_iic_relay_api_WifiI2CRelayResponse> {
+	class WifiI2CResponseWriter: public Writer<service_api_WifiI2CRelayResponse> {
 	public:
 		WifiI2CResponseWriter(httpd_req_t *request): m_request(request) {
 			if (!m_request) {
@@ -20,11 +20,11 @@ namespace nanoipc {
 		WifiI2CResponseWriter(const WifiI2CResponseWriter&) = default;
 		WifiI2CResponseWriter& operator=(const WifiI2CResponseWriter&) = default;
 
-		void write(const wifi_iic_relay_api_WifiI2CRelayResponse& response) const override {
+		void write(const service_api_WifiI2CRelayResponse& response) const override {
             HttpResponseDataWriter writer(m_request);
-            PbMessageWriter<wifi_iic_relay_api_WifiI2CRelayResponse> pb_writer(
+            PbMessageWriter<service_api_WifiI2CRelayResponse> pb_writer(
                 &writer,
-                wifi_iic_relay_api_WifiI2CRelayResponse_fields
+                service_api_WifiI2CRelayResponse_fields
             );
             pb_writer.write(response);
 		}
