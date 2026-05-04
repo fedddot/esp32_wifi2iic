@@ -2,28 +2,12 @@ syntax = "proto3";
 
 package service_api;
 
-message WifiConfigRequest {
-    string ssid = 1;
-    string pass = 2;
+service WifiI2CRelayWriteService {
+    rpc Write(WifiI2CRelayWriteRequest) returns (WifiI2CRelayWriteResponse);
 }
 
-message WifiConfigResponse {
-    Result result = 1;
-}
-
-message WifiI2CRelayRequest {
-    oneof request {
-        WifiI2CRelayWriteRequest write_request = 1;
-        WifiI2CRelayReadRequest read_request = 2;
-    }
-}
-
-message WifiI2CRelayResponse {
-    oneof response {
-        WifiI2CRelayWriteResponse write_response = 1;
-        WifiI2CRelayReadResponse read_response = 2;
-        Result undefined_response = 3;
-    }
+service WifiI2CRelayReadService {
+    rpc Read(WifiI2CRelayReadRequest) returns (WifiI2CRelayReadResponse);
 }
 
 message WifiI2CRelayWriteRequest {
