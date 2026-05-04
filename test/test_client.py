@@ -83,9 +83,9 @@ def main():
     args = parser.parse_args()
 
     if args.command == "write":
-        request = build_write_request(args.i2c_address, args.timeout_ms, bytes.fromhex(args.data))
+        request = build_write_request(args.i2c_address, args.timeout_ms + 2000, bytes.fromhex(args.data))
     else:
-        request = build_read_request(args.i2c_address, args.timeout_ms, args.length)
+        request = build_read_request(args.i2c_address, args.timeout_ms + 2000, args.length)
 
     payload = request.SerializeToString()
     print(f"Sending {len(payload)} bytes to {args.url} ...")

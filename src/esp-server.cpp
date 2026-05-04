@@ -103,7 +103,9 @@ extern "C" {
             mcu_server::NvsFlashGuard nvs_guard;
             mcu_server::WifiStationGuard network_guard(NETWORK_SSID, NETWORK_PASSWORD, nvs_guard);
 
-            init_iic();
+            if (init_iic() != ESP_OK) {
+                throw std::runtime_error("Failed to initialize I2C bus");
+            }
 
             nanoipc::HttpServer server(SERVICE_PORT, true);
             server.register_handler("/iic", HTTP_GET, read_data_cb);
