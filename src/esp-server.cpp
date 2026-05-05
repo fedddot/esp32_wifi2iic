@@ -38,7 +38,7 @@
 #endif
 
 #ifndef I2C_SCL_SPEED_HZ
-#  define I2C_SCL_SPEED_HZ 100000
+#  define I2C_SCL_SPEED_HZ 10000
 #endif
 
 static i2c_master_bus_handle_t s_i2c_bus_handle = nullptr;
@@ -144,6 +144,9 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
     case ESP_OK:
         resp.result = service_api_Result::service_api_Result_SUCCESS;
         break;
+    case ESP_ERR_TIMEOUT:
+        resp.result = service_api_Result::service_api_Result_TIMEOUT;
+        break;
     default:
         resp.result = service_api_Result::service_api_Result_FAILURE;
     }
@@ -184,6 +187,10 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
     case ESP_OK:
         resp.result = service_api_Result::service_api_Result_SUCCESS;
         resp.data.size = api_request->length;
+        break;
+    case ESP_ERR_TIMEOUT:
+        resp.result = service_api_Result::service_api_Result_TIMEOUT;
+        resp.data.size = 0;
         break;
     default:
         resp.result = service_api_Result::service_api_Result_FAILURE;

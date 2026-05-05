@@ -34,5 +34,6 @@ message WifiI2CRelayReadResponse {
 enum Result {
     SUCCESS = 0;
     BAD_REQUEST = 1;
-    FAILURE = 2;
+    TIMEOUT = 2;
+    FAILURE = 3;
 }
