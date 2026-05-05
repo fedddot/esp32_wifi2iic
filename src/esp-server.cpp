@@ -39,7 +39,7 @@
 #endif
 
 #ifndef I2C_SCL_SPEED_HZ
-#  define I2C_SCL_SPEED_HZ 5000
+#  define I2C_SCL_SPEED_HZ 400000
 #endif
 
 static i2c_master_bus_handle_t s_i2c_bus_handle = nullptr;
