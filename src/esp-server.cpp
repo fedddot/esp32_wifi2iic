@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cstring>
 #include <optional>
 
 #include "esp_err.h"
@@ -38,7 +39,7 @@
 #endif
 
 #ifndef I2C_SCL_SPEED_HZ
-#  define I2C_SCL_SPEED_HZ 10000
+#  define I2C_SCL_SPEED_HZ 5000
 #endif
 
 static i2c_master_bus_handle_t s_i2c_bus_handle = nullptr;
@@ -177,9 +178,10 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
         response_writer.write(resp);
         return ESP_OK;
     }
+    uint8_t buffer[128] = {'\0'};
     const auto read_result = read_iic_data(
         (uint8_t)(0xFF & api_request->address),
-        resp.data.bytes,
+        buffer,
         api_request->length,
         api_request->timeout_ms
     );
@@ -187,6 +189,7 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
     case ESP_OK:
         resp.result = service_api_Result::service_api_Result_SUCCESS;
         resp.data.size = api_request->length;
+        std::memcpy(resp.data.bytes, buffer, api_request->length);
         break;
     case ESP_ERR_TIMEOUT:
         resp.result = service_api_Result::service_api_Result_TIMEOUT;
