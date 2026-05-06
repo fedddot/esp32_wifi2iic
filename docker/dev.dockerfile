@@ -23,7 +23,8 @@ ENV PATH="${COPILOT_HOME}/bin:${PATH}"
 
 RUN apt-get install -y gh
 
-RUN bash --init-file $IDF_PATH/export.sh -c "$IDF_PYTHON_ENV_PATH/bin/pip install protobuf grpcio-tools"
+WORKDIR ${IDF_PATH}
+RUN . ./export.sh && $IDF_PYTHON_ENV_PATH/bin/pip install protobuf grpcio-tools
 
 ENV SHELL=bash
 
@@ -40,8 +41,6 @@ USER developer
 
 ENV TARGET=esp32s2
 
-WORKDIR /usr/app/srcRUN $IDF_TOOLS_PATH/entrypoint.sh
-# RUN pip install --upgrade --break-system-packages protobuf grpcio-tools
-# RUN bash --init-file $IDF_PATH/export.sh -c "$IDF_PYTHON_ENV_PATH/bin/pip install protobuf grpcio-tools"
+WORKDIR /usr/app/src
 
 ENTRYPOINT ["bash"]
