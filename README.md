@@ -193,6 +193,20 @@ python3 test_client.py http://192.168.1.42:5656/iic read 0x50 100 2 --write-data
 
 ---
 
+### Customising buffer sizes
+
+The maximum byte-field sizes used by the nanopb-generated serialiser are defined in [`src/service.options`](src/service.options):
+
+```
+service_api.WifiI2CRelayWriteRequest.write_data max_size:128
+service_api.WifiI2CRelayReadRequest.write_data  max_size:128
+service_api.WifiI2CRelayResponse.data           max_size:128
+```
+
+Edit the `max_size` values to match your needs, then rebuild the firmware — the new limits will be picked up automatically during the cmake build step.
+
+---
+
 ## Test client
 
 A ready-made Python test client is provided in [`test/test_client.py`](test/test_client.py).
