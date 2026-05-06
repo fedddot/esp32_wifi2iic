@@ -239,3 +239,13 @@ To regenerate the Python protobuf bindings after changing `src/service.proto`:
 pip install grpcio-tools
 python3 -m grpc_tools.protoc -I src --python_out=test src/service.proto
 ```
+
+---
+
+## Credits
+
+This project builds on the following open-source libraries:
+
+- **[nanoipc](https://github.com/fedddot/nanoipc)** — a minimal, platform-independent C++17 IPC layer for message exchange over byte-stream transports. Provides the HTTP server glue, Protocol Buffer reader/writer, and COBS framing used in this project.
+  - **[nanopb](https://github.com/nanopb/nanopb)** — small code-size Protocol Buffers implementation for embedded systems (zlib license).
+  - **[nanocobs](https://github.com/charlesnicholson/nanocobs)** — a minimal COBS (Consistent Overhead Byte Stuffing) framing library (public domain / Unlicense).
