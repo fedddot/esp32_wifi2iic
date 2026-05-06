@@ -50,6 +50,7 @@ static esp_err_t init_iic();
 static esp_err_t deinit_iic();
 static esp_err_t read_iic_data(const uint8_t address, uint8_t *dst, size_t nbytes, const uint16_t timeout_ms);
 static esp_err_t write_iic_data(const uint8_t address, const uint8_t *src, size_t nbytes, const uint16_t timeout_ms);
+static esp_err_t write_read_iic_data(const uint8_t address, const uint8_t *write_src, size_t write_nbytes, uint8_t *read_dst, size_t read_nbytes, const uint16_t timeout_ms);
 
 static void blink_loop();
 
@@ -143,29 +144,19 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
         );
     } else {
         // Write-then-read: transmit register/command bytes, then read back.
-        i2c_device_config_t dev_config = {};
-        dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
-        dev_config.device_address = (uint16_t)(0xFF & api_request->address);
-        dev_config.scl_speed_hz = I2C_SCL_SPEED_HZ;
-        i2c_master_dev_handle_t dev_handle;
-        iic_result = i2c_master_bus_add_device(s_i2c_bus_handle, &dev_config, &dev_handle);
-        if (iic_result == ESP_OK) {
-            iic_result = i2c_master_transmit_receive(
-                dev_handle,
-                api_request->write_data.bytes,
-                api_request->write_data.size,
-                buffer,
-                api_request->read_size,
-                (int)api_request->timeout_ms
-            );
-            i2c_master_bus_rm_device(dev_handle);
-        }
+        iic_result = write_read_iic_data(
+            (uint8_t)(0xFF & api_request->address),
+            api_request->write_data.bytes,
+            api_request->write_data.size,
+            resp.data.bytes,
+            api_request->read_size,
+            api_request->timeout_ms
+        );
     }
     switch (iic_result) {
     case ESP_OK:
         resp.result = service_api_Result::service_api_Result_SUCCESS;
         resp.data.size = api_request->read_size;
-        std::memcpy(resp.data.bytes, buffer, api_request->read_size);
         break;
     case ESP_ERR_TIMEOUT:
         resp.result = service_api_Result::service_api_Result_TIMEOUT;
@@ -244,6 +235,21 @@ static esp_err_t write_iic_data(const uint8_t address, const uint8_t *src, size_
         return result;
     }
     result = i2c_master_transmit(dev_handle, src, nbytes, (int)timeout_ms);
+    i2c_master_bus_rm_device(dev_handle);
+    return result;
+}
+
+static esp_err_t write_read_iic_data(const uint8_t address, const uint8_t *write_src, size_t write_nbytes, uint8_t *read_dst, size_t read_nbytes, const uint16_t timeout_ms) {
+    i2c_device_config_t dev_config = {};
+    dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+    dev_config.device_address = address;
+    dev_config.scl_speed_hz = I2C_SCL_SPEED_HZ;
+    i2c_master_dev_handle_t dev_handle;
+    auto result = i2c_master_bus_add_device(s_i2c_bus_handle, &dev_config, &dev_handle);
+    if (result != ESP_OK) {
+        return result;
+    }
+    result = i2c_master_transmit_receive(dev_handle, write_src, write_nbytes, read_dst, read_nbytes, (int)timeout_ms);
     i2c_master_bus_rm_device(dev_handle);
     return result;
 }
