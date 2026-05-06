@@ -24,7 +24,6 @@ FROM builder AS developer
 
 WORKDIR ${IDF_PATH}
 RUN ./tools/idf_tools.py install esp-clang
-# RUN chmod -R a+rwX ${IDF_TOOLS_PATH}
 
 ARG UID=1000
 ARG GID=1000
@@ -39,11 +38,11 @@ RUN chmod -R a+rwX ${COPILOT_HOME}
 
 RUN userdel -r ubuntu 2>/dev/null; groupdel ubuntu 2>/dev/null; true
 RUN groupadd -g ${GID} ${USERNAME}
-RUN useradd -m -u ${UID} -g ${USERNAME} -s /bin/bash -d /home/developer ${USERNAME}
-ENV HOME=/home/developer
+RUN useradd -m -u ${UID} -g ${USERNAME} -s /bin/bash -d /home/${USERNAME} ${USERNAME}
+ENV HOME=/home/${USERNAME}
 ENV SHELL=bash
 
-USER developer
+USER ${USERNAME}
 
 WORKDIR /workspace
 

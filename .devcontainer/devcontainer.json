@@ -5,7 +5,8 @@
         "context": "..",
         "args": {
             "UID": "${localEnv:UID:1000}",
-            "GID": "${localEnv:GID:1000}"
+            "GID": "${localEnv:GID:1000}",
+            "USERNAME": "${localEnv:USER:developer}"
         }
     },
     "privileged": true,
