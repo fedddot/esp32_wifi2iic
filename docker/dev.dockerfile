@@ -25,8 +25,6 @@ FROM builder AS developer
 WORKDIR ${IDF_PATH}
 RUN ./tools/idf_tools.py install esp-clang
 RUN . ./export.sh && ln -sf "$(which clangd)" /usr/local/bin/clangd
-RUN . ./export.sh && ln -sf "$(which xtensa-$TARGET-elf-gcc)" /usr/local/bin/xtensa-$TARGET-elf-gcc
-RUN . ./export.sh && ln -sf "$(which xtensa-$TARGET-elf-g++)" /usr/local/bin/xtensa-$TARGET-elf-g++
 
 ARG UID=1000
 ARG GID=1000
