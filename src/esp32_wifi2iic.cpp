@@ -112,7 +112,6 @@ extern "C" {
             nanoipc::HttpServer server(SERVICE_PORT, true);
             server.register_handler("/iic", HTTP_GET, read_data_cb);
             server.register_handler("/iic", HTTP_POST, write_data_cb);
-            server.register_handler("/iic/write_read", HTTP_GET, write_read_data_cb);
             while (true) {
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
             }
