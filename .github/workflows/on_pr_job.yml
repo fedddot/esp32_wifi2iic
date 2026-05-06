@@ -44,9 +44,9 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
         mkdir -p ${{env.WORKSPACE_BIN_DIR}}
-        docker run -i -v ${{github.workspace}}:${{env.CONTAINER_SRC_DIR}} -v ${{env.WORKSPACE_BIN_DIR}}:${{env.CONTAINER_BIN_DIR}} --entrypoint bash ${{steps.build_dev_image.outputs.imageid}} -c "cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DNETWORK_SSID=TestNetwork -DNETWORK_PASSWORD=TestPassword -S ${{env.CONTAINER_SRC_DIR}} -B ${{env.CONTAINER_BIN_DIR}}"
+        docker run -i -v ${{github.workspace}}:${{env.CONTAINER_SRC_DIR}} -v ${{env.WORKSPACE_BIN_DIR}}:${{env.CONTAINER_BIN_DIR}} --entrypoint bash ${{steps.build_dev_image.outputs.imageid}} -c "source $IDF_TOOLS_EXPORT_CMD && cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DNETWORK_SSID=TestNetwork -DNETWORK_PASSWORD=TestPassword -S ${{env.CONTAINER_SRC_DIR}} -B ${{env.CONTAINER_BIN_DIR}}"
     
     - name: build
       working-directory: ${{github.workspace}}
       run: |
-        docker run -i -v ${{github.workspace}}:${{env.CONTAINER_SRC_DIR}} -v ${{env.WORKSPACE_BIN_DIR}}:${{env.CONTAINER_BIN_DIR}} --entrypoint bash ${{steps.build_dev_image.outputs.imageid}} -c "cmake --build ${{env.CONTAINER_BIN_DIR}} -j $(nproc)"
+        docker run -i -v ${{github.workspace}}:${{env.CONTAINER_SRC_DIR}} -v ${{env.WORKSPACE_BIN_DIR}}:${{env.CONTAINER_BIN_DIR}} --entrypoint bash ${{steps.build_dev_image.outputs.imageid}} -c "source $IDF_TOOLS_EXPORT_CMD && cmake --build ${{env.CONTAINER_BIN_DIR}} -j $(nproc)"
