@@ -45,7 +45,7 @@ message WifiI2CRelayReadRequest {
 // Result encodes the outcome of an I2C transaction.
 //   SUCCESS     – transaction completed successfully.
 //   BAD_REQUEST – the request was malformed or the requested size exceeds the
-//                 internal buffer limit (128 bytes).
+//                 internal buffer limit (see service.options).
 //   TIMEOUT     – the I2C device did not respond within timeout_ms.
 //   FAILURE     – the transaction failed for any other reason.
 enum Result {
