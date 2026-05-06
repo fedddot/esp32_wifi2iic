@@ -4,7 +4,7 @@ set(TARGET $ENV{TARGET})
 set(CMAKE_TOOLCHAIN_FILE $ENV{IDF_PATH}/tools/cmake/toolchain-${TARGET}.cmake)
 include($ENV{IDF_PATH}/tools/cmake/idf.cmake)
 
-project(esp_mcu_server C CXX)
+project(esp32_wifi2iic C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -98,7 +98,7 @@ target_link_libraries(
     idf::esp_wifi
 )
 
-add_executable(${CMAKE_PROJECT_NAME}.elf ${CMAKE_CURRENT_LIST_DIR}/src/esp-server.cpp)
+add_executable(${CMAKE_PROJECT_NAME}.elf ${CMAKE_CURRENT_LIST_DIR}/src/${CMAKE_PROJECT_NAME}.cpp)
 target_link_libraries(
     ${CMAKE_PROJECT_NAME}.elf
     PRIVATE
