@@ -39,7 +39,11 @@
 #endif
 
 #ifndef I2C_SCL_SPEED_HZ
-#  define I2C_SCL_SPEED_HZ 400000
+#  define I2C_SCL_SPEED_HZ 400000UL
+#endif
+
+#ifndef HTTP_READER_BUFFER_SIZE
+#  define HTTP_READER_BUFFER_SIZE 256UL
 #endif
 
 static i2c_master_bus_handle_t s_i2c_bus_handle = nullptr;
@@ -78,7 +82,7 @@ extern "C" {
 }
 
 inline esp_err_t write_data_cb(httpd_req_t *request) {
-    nanoipc::HttpRequestDataReader request_data_reader(request);
+    nanoipc::HttpRequestDataReader<HTTP_READER_BUFFER_SIZE> request_data_reader(request);
     nanoipc::PbMessageReader<service_api_WifiI2CRelayWriteRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayWriteRequest_fields);
     nanoipc::HttpResponseDataWriter response_data_writer(request);
     nanoipc::PbMessageWriter<service_api_WifiI2CRelayResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayResponse_fields);
@@ -112,7 +116,7 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
 }
 
 inline esp_err_t read_data_cb(httpd_req_t *request) {
-    nanoipc::HttpRequestDataReader request_data_reader(request);
+    nanoipc::HttpRequestDataReader<HTTP_READER_BUFFER_SIZE> request_data_reader(request);
     nanoipc::PbMessageReader<service_api_WifiI2CRelayReadRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayReadRequest_fields);
     nanoipc::HttpResponseDataWriter response_data_writer(request);
     nanoipc::PbMessageWriter<service_api_WifiI2CRelayResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayResponse_fields);
