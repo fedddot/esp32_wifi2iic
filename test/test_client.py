@@ -3,19 +3,24 @@
 
 Usage:
     python3 test_client.py <url> write <i2c_address> <timeout_ms> <hex_data>
-    python3 test_client.py <url> read  <i2c_address> <timeout_ms> <length>
-    python3 test_client.py <url> write-receive <i2c_address> <timeout_ms> <hex_write_data> <read_length>
+    python3 test_client.py <url> read  <i2c_address> <timeout_ms> <read_size>
+    python3 test_client.py <url> read  <i2c_address> <timeout_ms> <read_size> --write-data <hex_data>
 
 Examples:
+    # Write bytes to device at address 0x50
     python3 test_client.py http://192.168.4.1/iic write 0x50 100 deadbeef
-    python3 test_client.py http://192.168.4.1/iic read  0x50 100 4
-    python3 test_client.py http://192.168.4.1/iic/write_read write-receive 0x50 100 deadbeef 4
+
+    # Plain read: receive 4 bytes from device at address 0x50
+    python3 test_client.py http://192.168.4.1/iic read 0x50 100 4
+
+    # Write-then-read: send register address 0x00, then read 4 bytes back
+    python3 test_client.py http://192.168.4.1/iic read 0x50 100 4 --write-data 00
 
 Dependencies:
     pip install protobuf requests
 
 Generate the Python bindings with:
-    python3 -m grpc_tools.protoc -I src --python_out=. src/service.proto
+    python3 -m grpc_tools.protoc -I src --python_out=test src/service.proto
 """
 
 import argparse
@@ -32,7 +37,7 @@ try:
 except ImportError:
     sys.exit(
         "service_pb2.py not found. Generate it with:\n"
-        "  python3 -m grpc_tools.protoc -I src --python_out=. src/service.proto"
+        "  python3 -m grpc_tools.protoc -I src --python_out=test src/service.proto"
     )
 
 
@@ -40,29 +45,27 @@ def build_write_request(i2c_address: int, timeout_ms: int, data: bytes) -> servi
     req = service_pb2.WifiI2CRelayWriteRequest()
     req.address = i2c_address
     req.timeout_ms = timeout_ms
-    req.data = data
+    req.write_data = data
     return req
 
 
-def build_read_request(i2c_address: int, timeout_ms: int, length: int) -> service_pb2.WifiI2CRelayReadRequest:
+def build_read_request(
+    i2c_address: int,
+    timeout_ms: int,
+    read_size: int,
+    write_data: bytes = b"",
+) -> service_pb2.WifiI2CRelayReadRequest:
+    """Build a read request.
+
+    If write_data is non-empty the server will perform an atomic
+    write-then-read (i2c_master_transmit_receive).  If write_data is empty a
+    plain read is executed.
+    """
     req = service_pb2.WifiI2CRelayReadRequest()
     req.address = i2c_address
     req.timeout_ms = timeout_ms
-    req.length = length
-    return req
-
-
-def build_write_receive_request(
-    i2c_address: int,
-    timeout_ms: int,
-    write_data: bytes,
-    read_length: int,
-) -> service_pb2.WifiI2CRelayWriteReceiveRequest:
-    req = service_pb2.WifiI2CRelayWriteReceiveRequest()
-    req.address = i2c_address
-    req.timeout_ms = timeout_ms
     req.write_data = write_data
-    req.read_length = read_length
+    req.read_size = read_size
     return req
 
 
@@ -80,47 +83,37 @@ def print_read_response(raw: bytes) -> None:
     print(f"Read response: {result_name}, data: {resp.data.hex()}")
 
 
-def print_write_receive_response(raw: bytes) -> None:
-    resp = service_pb2.WifiI2CRelayWriteReceiveResponse()
-    resp.ParseFromString(raw)
-    result_name = service_pb2.Result.Name(resp.result)
-    print(f"WriteReceive response: {result_name}, data: {resp.data.hex()}")
-
-
 def main():
     parser = argparse.ArgumentParser(description="Send WiFi I2C relay request via protobuf HTTP")
     parser.add_argument("url", help="Target URL, e.g. http://192.168.4.1/iic")
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    write_parser = subparsers.add_parser("write", help="Send a write request")
+    write_parser = subparsers.add_parser("write", help="Send a write request (HTTP POST)")
     write_parser.add_argument("i2c_address", type=lambda x: int(x, 0), help="I2C device address (e.g. 0x50)")
     write_parser.add_argument("timeout_ms", type=int, help="Timeout in milliseconds")
     write_parser.add_argument("data", help="Data bytes as a hex string (e.g. deadbeef)")
 
-    read_parser = subparsers.add_parser("read", help="Send a read request")
+    read_parser = subparsers.add_parser("read", help="Send a read request (HTTP GET)")
     read_parser.add_argument("i2c_address", type=lambda x: int(x, 0), help="I2C device address (e.g. 0x50)")
     read_parser.add_argument("timeout_ms", type=int, help="Timeout in milliseconds")
-    read_parser.add_argument("length", type=int, help="Number of bytes to read")
-
-    write_receive_parser = subparsers.add_parser("write-receive", help="Send a write-receive request")
-    write_receive_parser.add_argument("i2c_address", type=lambda x: int(x, 0), help="I2C device address (e.g. 0x50)")
-    write_receive_parser.add_argument("timeout_ms", type=int, help="Timeout in milliseconds")
-    write_receive_parser.add_argument("write_data", help="Data bytes to write as a hex string (e.g. deadbeef)")
-    write_receive_parser.add_argument("read_length", type=int, help="Number of bytes to read back")
+    read_parser.add_argument("read_size", type=int, help="Number of bytes to read")
+    read_parser.add_argument(
+        "--write-data",
+        default="",
+        help="Optional hex bytes to transmit before reading (triggers write-then-read)",
+    )
 
     args = parser.parse_args()
 
     if args.command == "write":
         request = build_write_request(args.i2c_address, args.timeout_ms + 2000, bytes.fromhex(args.data))
-    elif args.command == "read":
-        request = build_read_request(args.i2c_address, args.timeout_ms + 2000, args.length)
     else:
-        request = build_write_receive_request(
+        request = build_read_request(
             args.i2c_address,
             args.timeout_ms + 2000,
-            bytes.fromhex(args.write_data),
-            args.read_length,
+            args.read_size,
+            bytes.fromhex(args.write_data) if args.write_data else b"",
         )
 
     payload = request.SerializeToString()
@@ -131,7 +124,7 @@ def main():
         for i in range(30):
             print(f"Sending request {i+1}/30")
             t_start = time.perf_counter()
-            if args.command in {"read", "write-receive"}:
+            if args.command == "read":
                 response = session.get(args.url, data=payload, timeout=10)
             else:
                 response = session.post(args.url, data=payload, timeout=10)
@@ -139,8 +132,6 @@ def main():
             response.raise_for_status()
             if args.command == "read":
                 print_read_response(response.content)
-            elif args.command == "write-receive":
-                print_write_receive_response(response.content)
             else:
                 print_write_response(response.content)
             print(f"  Round-trip: {elapsed_ms:.1f} ms")
@@ -148,3 +139,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

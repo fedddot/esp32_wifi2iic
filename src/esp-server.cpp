@@ -46,7 +46,6 @@ static i2c_master_bus_handle_t s_i2c_bus_handle = nullptr;
 
 static esp_err_t write_data_cb(httpd_req_t *request);
 static esp_err_t read_data_cb(httpd_req_t *request);
-static esp_err_t write_read_data_cb(httpd_req_t *request);
 static void blink_loop();
 
 static esp_err_t init_iic() {
@@ -112,7 +111,6 @@ extern "C" {
             nanoipc::HttpServer server(SERVICE_PORT, true);
             server.register_handler("/iic", HTTP_GET, read_data_cb);
             server.register_handler("/iic", HTTP_POST, write_data_cb);
-            server.register_handler("/iic/write_read", HTTP_GET, write_read_data_cb);
             while (true) {
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
             }
@@ -138,8 +136,8 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
     }
     const auto write_result = write_iic_data(
         (uint8_t)(0xFF & api_request->address),
-        api_request->data.bytes,
-        api_request->data.size,
+        api_request->write_data.bytes,
+        api_request->write_data.size,
         api_request->timeout_ms
     );
     service_api_WifiI2CRelayWriteResponse resp = service_api_WifiI2CRelayWriteResponse_init_zero;
@@ -166,93 +164,53 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
     if (!api_request.has_value()) {
         service_api_WifiI2CRelayReadResponse resp {
             .result = service_api_Result::service_api_Result_BAD_REQUEST,
-            .data = {
-                .size = 0
-            }
-        };
-        response_writer.write(resp);
-        return ESP_OK;
-    }
-    service_api_WifiI2CRelayReadResponse resp = service_api_WifiI2CRelayReadResponse_init_zero;
-    if (api_request->length > sizeof(resp.data.bytes)) {
-        resp.result = service_api_Result::service_api_Result_BAD_REQUEST;
-        resp.data.size = 0;
-        response_writer.write(resp);
-        return ESP_OK;
-    }
-    uint8_t buffer[128] = {'\0'};
-    const auto read_result = read_iic_data(
-        (uint8_t)(0xFF & api_request->address),
-        buffer,
-        api_request->length,
-        api_request->timeout_ms
-    );
-    switch (read_result) {
-    case ESP_OK:
-        resp.result = service_api_Result::service_api_Result_SUCCESS;
-        resp.data.size = api_request->length;
-        std::memcpy(resp.data.bytes, buffer, api_request->length);
-        break;
-    case ESP_ERR_TIMEOUT:
-        resp.result = service_api_Result::service_api_Result_TIMEOUT;
-        resp.data.size = 0;
-        break;
-    default:
-        resp.result = service_api_Result::service_api_Result_FAILURE;
-        resp.data.size = 0;
-    }
-    response_writer.write(resp);
-    return ESP_OK;
-}
-
-inline esp_err_t write_read_data_cb(httpd_req_t *request) {
-    nanoipc::HttpRequestDataReader request_data_reader(request);
-    nanoipc::PbMessageReader<service_api_WifiI2CRelayWriteReceiveRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayWriteReceiveRequest_fields);
-    nanoipc::HttpResponseDataWriter response_data_writer(request);
-    nanoipc::PbMessageWriter<service_api_WifiI2CRelayWriteReceiveResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayWriteReceiveResponse_fields);
-    const auto api_request = request_reader.read();
-    if (!api_request.has_value()) {
-        service_api_WifiI2CRelayWriteReceiveResponse resp {
-            .result = service_api_Result::service_api_Result_BAD_REQUEST,
             .data = { .size = 0 }
         };
         response_writer.write(resp);
         return ESP_OK;
     }
-    service_api_WifiI2CRelayWriteReceiveResponse resp = service_api_WifiI2CRelayWriteReceiveResponse_init_zero;
-    if (api_request->read_length > sizeof(resp.data.bytes)) {
+    service_api_WifiI2CRelayReadResponse resp = service_api_WifiI2CRelayReadResponse_init_zero;
+    if (api_request->read_size > sizeof(resp.data.bytes)) {
         resp.result = service_api_Result::service_api_Result_BAD_REQUEST;
         resp.data.size = 0;
         response_writer.write(resp);
         return ESP_OK;
     }
-    i2c_device_config_t dev_config = {};
-    dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
-    dev_config.device_address = (uint16_t)(0xFF & api_request->address);
-    dev_config.scl_speed_hz = I2C_SCL_SPEED_HZ;
-    i2c_master_dev_handle_t dev_handle;
-    auto result = i2c_master_bus_add_device(s_i2c_bus_handle, &dev_config, &dev_handle);
-    if (result != ESP_OK) {
-        resp.result = service_api_Result::service_api_Result_FAILURE;
-        resp.data.size = 0;
-        response_writer.write(resp);
-        return ESP_OK;
-    }
     uint8_t buffer[128] = {'\0'};
-    result = i2c_master_transmit_receive(
-        dev_handle,
-        api_request->write_data.bytes,
-        api_request->write_data.size,
-        buffer,
-        api_request->read_length,
-        (int)api_request->timeout_ms
-    );
-    i2c_master_bus_rm_device(dev_handle);
-    switch (result) {
+    esp_err_t iic_result;
+    if (api_request->write_data.size == 0) {
+        // Plain read: no register/command prefix required.
+        iic_result = read_iic_data(
+            (uint8_t)(0xFF & api_request->address),
+            buffer,
+            api_request->read_size,
+            api_request->timeout_ms
+        );
+    } else {
+        // Write-then-read: transmit register/command bytes, then read back.
+        i2c_device_config_t dev_config = {};
+        dev_config.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+        dev_config.device_address = (uint16_t)(0xFF & api_request->address);
+        dev_config.scl_speed_hz = I2C_SCL_SPEED_HZ;
+        i2c_master_dev_handle_t dev_handle;
+        iic_result = i2c_master_bus_add_device(s_i2c_bus_handle, &dev_config, &dev_handle);
+        if (iic_result == ESP_OK) {
+            iic_result = i2c_master_transmit_receive(
+                dev_handle,
+                api_request->write_data.bytes,
+                api_request->write_data.size,
+                buffer,
+                api_request->read_size,
+                (int)api_request->timeout_ms
+            );
+            i2c_master_bus_rm_device(dev_handle);
+        }
+    }
+    switch (iic_result) {
     case ESP_OK:
         resp.result = service_api_Result::service_api_Result_SUCCESS;
-        resp.data.size = api_request->read_length;
-        std::memcpy(resp.data.bytes, buffer, api_request->read_length);
+        resp.data.size = api_request->read_size;
+        std::memcpy(resp.data.bytes, buffer, api_request->read_size);
         break;
     case ESP_ERR_TIMEOUT:
         resp.result = service_api_Result::service_api_Result_TIMEOUT;
