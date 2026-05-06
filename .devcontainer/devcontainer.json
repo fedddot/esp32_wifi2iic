@@ -40,8 +40,8 @@
             }
         }
     },
-    "workspaceFolder": "/usr/app/src",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/usr/app/src,type=bind",
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
     "mounts": [
         "source=/dev,target=/dev,type=bind",
         "source=${localEnv:HOME}/.ssh,target=/home/developer/.ssh,type=bind"
