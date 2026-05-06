@@ -10,14 +10,10 @@ service WifiI2CRelayReadService {
     rpc Read(WifiI2CRelayReadRequest) returns (WifiI2CRelayReadResponse);
 }
 
-service WifiI2CRelayWriteReceiveService {
-    rpc WriteReceive(WifiI2CRelayWriteReceiveRequest) returns (WifiI2CRelayWriteReceiveResponse);
-}
-
 message WifiI2CRelayWriteRequest {
     uint32 address = 1;
     uint32 timeout_ms = 2;
-    bytes data = 3;
+    bytes write_data = 3;
 }
 
 message WifiI2CRelayWriteResponse {
@@ -27,22 +23,11 @@ message WifiI2CRelayWriteResponse {
 message WifiI2CRelayReadRequest {
     uint32 address = 1;
     uint32 timeout_ms = 2;
-    uint32 length = 3;
+    bytes write_data = 3;
+    uint32 read_size = 4;
 }
 
 message WifiI2CRelayReadResponse {
-    Result result = 1;
-    bytes data = 2;
-}
-
-message WifiI2CRelayWriteReceiveRequest {
-    uint32 address = 1;
-    uint32 timeout_ms = 2;
-    bytes write_data = 3;
-    uint32 read_length = 4;
-}
-
-message WifiI2CRelayWriteReceiveResponse {
     Result result = 1;
     bytes data = 2;
 }

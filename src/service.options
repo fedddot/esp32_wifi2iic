@@ -1,6 +1,3 @@
-service_api.WifiI2CRelayWriteRequest.data max_size:128
-service_api.WifiI2CRelayReadResponse.data max_size:128
-service_api.WifiI2CRelayWriteReceiveRequest.write_data max_size:128
-service_api.WifiI2CRelayWriteReceiveResponse.data max_size:128
-service_api.WifiConfigRequest.ssid max_size:32
-service_api.WifiConfigRequest.pass max_size:64
+service_api.WifiI2CRelayWriteRequest.write_data max_size:128
+service_api.WifiI2CRelayReadRequest.write_data  max_size:128
+service_api.WifiI2CRelayReadResponse.data       max_size:128
