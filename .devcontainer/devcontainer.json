@@ -28,7 +28,10 @@
             ],
             "settings": {
                 "clangd.path": "/usr/local/bin/clangd",
-                "clangd.arguments": ["--query-driver=/usr/local/bin/xtensa-esp32s2-elf-gcc,/usr/local/bin/xtensa-esp32s2-elf-g++"],
+                "clangd.arguments": [
+                    "--query-driver=/opt/esp/tools/xtensa-esp-elf/*/xtensa-esp-elf/bin/xtensa-esp*-elf-gcc,/opt/esp/tools/xtensa-esp-elf/*/xtensa-esp-elf/bin/xtensa-esp*-elf-g++",
+                    "--compile-commands-dir=/workspace/build"
+                ],
                 "editor.tabSize": 4,
                 "editor.insertSpaces": true,
                 "editor.indentSize": "tabSize",
