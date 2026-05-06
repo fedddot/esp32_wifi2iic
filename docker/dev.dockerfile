@@ -17,6 +17,14 @@ RUN useradd -m -u ${UID} -g developer -s /bin/bash developer
 
 RUN chmod -R a+rwX ${IDF_TOOLS_PATH}
 
+ENV COPILOT_HOME=/usr/local/copilot
+RUN curl -fsSL https://gh.io/copilot-install | PREFIX=${COPILOT_HOME} bash
+ENV PATH="${COPILOT_HOME}/bin:${PATH}"
+
+RUN apt-get install -y gh
+
+RUN bash --init-file $IDF_PATH/export.sh -c "$IDF_PYTHON_ENV_PATH/bin/pip install protobuf grpcio-tools"
+
 ENV SHELL=bash
 
 ENV HOME=/home/developer
@@ -26,15 +34,13 @@ RUN echo "source ${HOME}/shell_additions" >> ${HOME}/.bashrc
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
-ENV LANG="en_US.UTF-8" 
+ENV LANG="en_US.UTF-8"
 
 USER developer
 
 ENV TARGET=esp32s2
 
-WORKDIR /usr/app/src
-
-RUN $IDF_TOOLS_PATH/entrypoint.sh
+WORKDIR /usr/app/srcRUN $IDF_TOOLS_PATH/entrypoint.sh
 # RUN pip install --upgrade --break-system-packages protobuf grpcio-tools
 # RUN bash --init-file $IDF_PATH/export.sh -c "$IDF_PYTHON_ENV_PATH/bin/pip install protobuf grpcio-tools"
 
