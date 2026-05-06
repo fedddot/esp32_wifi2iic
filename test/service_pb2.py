@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rservice.proto\x12\x0bservice_api\"S\n\x18WifiI2CRelayWriteRequest\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\r\x12\x12\n\ntimeout_ms\x18\x02 \x01(\r\x12\x12\n\nwrite_data\x18\x03 \x01(\x0c\"I\n\x14WifiI2CRelayResponse\x12#\n\x06result\x18\x01 \x01(\x0e\x32\x13.service_api.Result\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"e\n\x17WifiI2CRelayReadRequest\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\r\x12\x12\n\ntimeout_ms\x18\x02 \x01(\r\x12\x12\n\nwrite_data\x18\x03 \x01(\x0c\x12\x11\n\tread_size\x18\x04 \x01(\r*@\n\x06Result\x12\x0b\n\x07SUCCESS\x10\x00\x12\x0f\n\x0b\x42\x41\x44_REQUEST\x10\x01\x12\x0b\n\x07TIMEOUT\x10\x02\x12\x0b\n\x07\x46\x41ILURE\x10\x03\x32m\n\x18WifiI2CRelayWriteService\x12Q\n\x05Write\x12%.service_api.WifiI2CRelayWriteRequest\x1a!.service_api.WifiI2CRelayResponse2j\n\x17WifiI2CRelayReadService\x12O\n\x04Read\x12$.service_api.WifiI2CRelayReadRequest\x1a!.service_api.WifiI2CRelayResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rservice.proto\x12\x0bservice_api\"S\n\x18WifiI2CRelayWriteRequest\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\r\x12\x12\n\ntimeout_ms\x18\x02 \x01(\r\x12\x12\n\nwrite_data\x18\x03 \x01(\x0c\"I\n\x14WifiI2CRelayResponse\x12#\n\x06result\x18\x01 \x01(\x0e\x32\x13.service_api.Result\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"e\n\x17WifiI2CRelayReadRequest\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\r\x12\x12\n\ntimeout_ms\x18\x02 \x01(\r\x12\x12\n\nwrite_data\x18\x03 \x01(\x0c\x12\x11\n\tread_size\x18\x04 \x01(\r*@\n\x06Result\x12\x0b\n\x07SUCCESS\x10\x00\x12\x0f\n\x0b\x42\x41\x44_REQUEST\x10\x01\x12\x0b\n\x07TIMEOUT\x10\x02\x12\x0b\n\x07\x46\x41ILURE\x10\x03\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,8 +39,4 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_WIFII2CRELAYRESPONSE']._serialized_end=188
   _globals['_WIFII2CRELAYREADREQUEST']._serialized_start=190
   _globals['_WIFII2CRELAYREADREQUEST']._serialized_end=291
-  _globals['_WIFII2CRELAYWRITESERVICE']._serialized_start=359
-  _globals['_WIFII2CRELAYWRITESERVICE']._serialized_end=468
-  _globals['_WIFII2CRELAYREADSERVICE']._serialized_start=470
-  _globals['_WIFII2CRELAYREADSERVICE']._serialized_end=576
 # @@protoc_insertion_point(module_scope)

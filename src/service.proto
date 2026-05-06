@@ -3,32 +3,6 @@ syntax = "proto3";
 package service_api;
 
 // ---------------------------------------------------------------------------
-// Services
-// ---------------------------------------------------------------------------
-
-// WifiI2CRelayWriteService handles write-only I2C transactions.
-// The client sends a WifiI2CRelayWriteRequest via HTTP POST to /iic.
-// The server writes the supplied bytes to the I2C device and returns a
-// WifiI2CRelayWriteResponse indicating success or the failure reason.
-service WifiI2CRelayWriteService {
-    rpc Write(WifiI2CRelayWriteRequest) returns (WifiI2CRelayResponse);
-}
-
-// WifiI2CRelayReadService handles read (and combined write-then-read) I2C
-// transactions.  The client sends a WifiI2CRelayReadRequest via HTTP GET
-// to /iic.
-// - If write_data is empty the server performs a plain I2C read of
-//   read_size bytes from the device.
-// - If write_data is non-empty the server performs an atomic
-//   write-then-read: it first transmits write_data to the device, then
-//   reads read_size bytes back in a single I2C transaction
-//   (i2c_master_transmit_receive).
-// The result is returned in WifiI2CRelayResponse.
-service WifiI2CRelayReadService {
-    rpc Read(WifiI2CRelayReadRequest) returns (WifiI2CRelayResponse);
-}
-
-// ---------------------------------------------------------------------------
 // Messages
 // ---------------------------------------------------------------------------
 
