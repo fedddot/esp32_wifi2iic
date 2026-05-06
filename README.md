@@ -22,7 +22,10 @@ A Docker image bundling the exact toolchain is provided so that no manual enviro
 ### Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) installed and running.
-- The repository cloned **with submodules**: `git clone --recurse-submodules <repo-url>`
+- The repository cloned: `git clone <repo-url>`
+
+> The ESP-IDF toolchain is bundled inside the Docker image (based on `espressif/idf:latest`).  
+> No submodules or local IDF installation are needed.
 
 ### Option A — VS Code Dev Container (recommended)
 
@@ -155,7 +158,7 @@ The write-then-read mode is useful for register-addressed devices: set `write_da
 |---|---|---|
 | `address` | `uint32` | 7-bit I²C device address |
 | `timeout_ms` | `uint32` | Transaction timeout in milliseconds |
-| `write_data` | `bytes` | Optional bytes to transmit before reading (leave empty for plain read) |
+| `write_data` | `bytes` | Optional bytes to transmit before reading (leave empty for a plain read). Useful when the I²C device requires a register address to be written before the actual read — for example, MPU6050 sensors expect the target register to be sent first. When set, the write and the subsequent read are performed as a single atomic transaction **without a stop condition in between** (`i2c_master_transmit_receive`). |
 | `read_size` | `uint32` | Number of bytes to read back (max 128) |
 
 **Response** — `WifiI2CRelayResponse`
