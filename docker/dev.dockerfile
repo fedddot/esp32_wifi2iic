@@ -20,6 +20,7 @@ RUN chmod -R a+rwX ${IDF_TOOLS_PATH}
 ENV COPILOT_HOME=/usr/local/copilot
 RUN curl -fsSL https://gh.io/copilot-install | PREFIX=${COPILOT_HOME} bash
 ENV PATH="${COPILOT_HOME}/bin:${PATH}"
+RUN chmod -R a+rwX ${COPILOT_HOME}
 
 RUN apt-get install -y gh
 
