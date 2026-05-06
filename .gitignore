@@ -20,3 +20,4 @@ sdkconfig
 !*.sh
 !*.proto
 !*.options
+!*.md

@@ -2,51 +2,52 @@ syntax = "proto3";
 
 package service_api;
 
-service WifiI2CRelayWriteService {
-    rpc Write(WifiI2CRelayWriteRequest) returns (WifiI2CRelayWriteResponse);
-}
+// ---------------------------------------------------------------------------
+// Messages
+// ---------------------------------------------------------------------------
 
-service WifiI2CRelayReadService {
-    rpc Read(WifiI2CRelayReadRequest) returns (WifiI2CRelayReadResponse);
-}
-
-service WifiI2CRelayWriteReceiveService {
-    rpc WriteReceive(WifiI2CRelayWriteReceiveRequest) returns (WifiI2CRelayWriteReceiveResponse);
-}
-
+// WifiI2CRelayWriteRequest is sent by the client to write data to an I2C
+// device.
+//   address    – 7-bit I2C device address.
+//   timeout_ms – transaction timeout in milliseconds.
+//   write_data – bytes to transmit to the device.
 message WifiI2CRelayWriteRequest {
     uint32 address = 1;
     uint32 timeout_ms = 2;
-    bytes data = 3;
+    bytes write_data = 3;
 }
 
-message WifiI2CRelayWriteResponse {
+// WifiI2CRelayResponse is the unified response for both write and read
+// transactions.
+//   result – outcome of the transaction (see Result enum).
+//   data   – bytes received from the device.  Populated only for read
+//             transactions on SUCCESS; empty for write transactions.
+message WifiI2CRelayResponse {
     Result result = 1;
+    bytes data = 2;
 }
 
+// WifiI2CRelayReadRequest is sent by the client to read data from an I2C
+// device.
+//   address    – 7-bit I2C device address.
+//   timeout_ms – transaction timeout in milliseconds.
+//   write_data – optional register/command bytes to transmit before reading.
+//                Leave empty for a plain read; set to trigger an atomic
+//                write-then-read (i2c_master_transmit_receive).
+//   read_size  – number of bytes to read back from the device.
 message WifiI2CRelayReadRequest {
     uint32 address = 1;
     uint32 timeout_ms = 2;
-    uint32 length = 3;
-}
-
-message WifiI2CRelayReadResponse {
-    Result result = 1;
-    bytes data = 2;
-}
-
-message WifiI2CRelayWriteReceiveRequest {
-    uint32 address = 1;
-    uint32 timeout_ms = 2;
     bytes write_data = 3;
-    uint32 read_length = 4;
+    uint32 read_size = 4;
 }
 
-message WifiI2CRelayWriteReceiveResponse {
-    Result result = 1;
-    bytes data = 2;
-}
-
+// Result encodes the outcome of an I2C transaction.
+//   SUCCESS     – transaction completed successfully.
+//   BAD_REQUEST – the request was malformed or the requested size exceeds the
+//                 internal buffer limit (128 bytes).
+//   TIMEOUT     – the I2C device did not respond within timeout_ms.
+//   FAILURE     – the transaction failed for any other reason.
 enum Result {
     SUCCESS = 0;
     BAD_REQUEST = 1;
