@@ -125,10 +125,10 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
     nanoipc::HttpRequestDataReader request_data_reader(request);
     nanoipc::PbMessageReader<service_api_WifiI2CRelayWriteRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayWriteRequest_fields);
     nanoipc::HttpResponseDataWriter response_data_writer(request);
-    nanoipc::PbMessageWriter<service_api_WifiI2CRelayWriteResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayWriteResponse_fields);
+    nanoipc::PbMessageWriter<service_api_WifiI2CRelayResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayResponse_fields);
     const auto api_request = request_reader.read();
     if (!api_request.has_value()) {
-        service_api_WifiI2CRelayWriteResponse resp {
+        service_api_WifiI2CRelayResponse resp {
             .result = service_api_Result::service_api_Result_BAD_REQUEST
         };
         response_writer.write(resp);
@@ -140,7 +140,7 @@ inline esp_err_t write_data_cb(httpd_req_t *request) {
         api_request->write_data.size,
         api_request->timeout_ms
     );
-    service_api_WifiI2CRelayWriteResponse resp = service_api_WifiI2CRelayWriteResponse_init_zero;
+    service_api_WifiI2CRelayResponse resp = service_api_WifiI2CRelayResponse_init_zero;
     switch (write_result) {
     case ESP_OK:
         resp.result = service_api_Result::service_api_Result_SUCCESS;
@@ -159,17 +159,17 @@ inline esp_err_t read_data_cb(httpd_req_t *request) {
     nanoipc::HttpRequestDataReader request_data_reader(request);
     nanoipc::PbMessageReader<service_api_WifiI2CRelayReadRequest> request_reader(&request_data_reader, service_api_WifiI2CRelayReadRequest_fields);
     nanoipc::HttpResponseDataWriter response_data_writer(request);
-    nanoipc::PbMessageWriter<service_api_WifiI2CRelayReadResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayReadResponse_fields);
+    nanoipc::PbMessageWriter<service_api_WifiI2CRelayResponse> response_writer(&response_data_writer, service_api_WifiI2CRelayResponse_fields);
     const auto api_request = request_reader.read();
     if (!api_request.has_value()) {
-        service_api_WifiI2CRelayReadResponse resp {
+        service_api_WifiI2CRelayResponse resp {
             .result = service_api_Result::service_api_Result_BAD_REQUEST,
             .data = { .size = 0 }
         };
         response_writer.write(resp);
         return ESP_OK;
     }
-    service_api_WifiI2CRelayReadResponse resp = service_api_WifiI2CRelayReadResponse_init_zero;
+    service_api_WifiI2CRelayResponse resp = service_api_WifiI2CRelayResponse_init_zero;
     if (api_request->read_size > sizeof(resp.data.bytes)) {
         resp.result = service_api_Result::service_api_Result_BAD_REQUEST;
         resp.data.size = 0;

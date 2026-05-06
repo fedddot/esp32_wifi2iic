@@ -11,7 +11,7 @@ package service_api;
 // The server writes the supplied bytes to the I2C device and returns a
 // WifiI2CRelayWriteResponse indicating success or the failure reason.
 service WifiI2CRelayWriteService {
-    rpc Write(WifiI2CRelayWriteRequest) returns (WifiI2CRelayWriteResponse);
+    rpc Write(WifiI2CRelayWriteRequest) returns (WifiI2CRelayResponse);
 }
 
 // WifiI2CRelayReadService handles read (and combined write-then-read) I2C
@@ -23,9 +23,9 @@ service WifiI2CRelayWriteService {
 //   write-then-read: it first transmits write_data to the device, then
 //   reads read_size bytes back in a single I2C transaction
 //   (i2c_master_transmit_receive).
-// The result is returned in WifiI2CRelayReadResponse.
+// The result is returned in WifiI2CRelayResponse.
 service WifiI2CRelayReadService {
-    rpc Read(WifiI2CRelayReadRequest) returns (WifiI2CRelayReadResponse);
+    rpc Read(WifiI2CRelayReadRequest) returns (WifiI2CRelayResponse);
 }
 
 // ---------------------------------------------------------------------------

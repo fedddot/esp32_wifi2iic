@@ -121,11 +121,12 @@ Writes bytes to an I²C device.
 | `timeout_ms` | `uint32` | Transaction timeout in milliseconds |
 | `write_data` | `bytes` | Bytes to transmit to the device |
 
-**Response** — `WifiI2CRelayWriteResponse`
+**Response** — `WifiI2CRelayResponse`
 
 | Field | Type | Description |
 |---|---|---|
 | `result` | `Result` | `SUCCESS`, `BAD_REQUEST`, `TIMEOUT`, or `FAILURE` |
+| `data` | `bytes` | Always empty for write transactions |
 
 **Example** (using the test client):
 
@@ -157,7 +158,7 @@ The write-then-read mode is useful for register-addressed devices: set `write_da
 | `write_data` | `bytes` | Optional bytes to transmit before reading (leave empty for plain read) |
 | `read_size` | `uint32` | Number of bytes to read back (max 128) |
 
-**Response** — `WifiI2CRelayReadResponse`
+**Response** — `WifiI2CRelayResponse`
 
 | Field | Type | Description |
 |---|---|---|

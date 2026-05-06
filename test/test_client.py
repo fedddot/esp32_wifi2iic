@@ -69,18 +69,14 @@ def build_read_request(
     return req
 
 
-def print_write_response(raw: bytes) -> None:
-    resp = service_pb2.WifiI2CRelayWriteResponse()
+def print_response(raw: bytes, label: str) -> None:
+    resp = service_pb2.WifiI2CRelayResponse()
     resp.ParseFromString(raw)
     result_name = service_pb2.Result.Name(resp.result)
-    print(f"Write response: {result_name}")
-
-
-def print_read_response(raw: bytes) -> None:
-    resp = service_pb2.WifiI2CRelayReadResponse()
-    resp.ParseFromString(raw)
-    result_name = service_pb2.Result.Name(resp.result)
-    print(f"Read response: {result_name}, data: {resp.data.hex()}")
+    if resp.data:
+        print(f"{label} response: {result_name}, data: {resp.data.hex()}")
+    else:
+        print(f"{label} response: {result_name}")
 
 
 def main():
@@ -131,9 +127,9 @@ def main():
             elapsed_ms = (time.perf_counter() - t_start) * 1000
             response.raise_for_status()
             if args.command == "read":
-                print_read_response(response.content)
+                print_response(response.content, "Read")
             else:
-                print_write_response(response.content)
+                print_response(response.content, "Write")
             print(f"  Round-trip: {elapsed_ms:.1f} ms")
 
 
