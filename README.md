@@ -102,6 +102,22 @@ idf.py -p /dev/ttyUSB0 flash
 
 ## API
 
+### Finding the device IP
+
+After the ESP32 boots and connects to WiFi, use `nmap` to locate it on the network (replace the subnet with your own):
+
+```bash
+nmap -sn 192.168.1.0/24
+```
+
+The ESP32 will appear in the output as:
+
+```
+Nmap scan report for espressif.lan (<device-ip-addr>)
+```
+
+Use `<device-ip-addr>` in all subsequent API calls.
+
 Once the ESP32 is running and connected to WiFi it serves the API on:
 
 ```
